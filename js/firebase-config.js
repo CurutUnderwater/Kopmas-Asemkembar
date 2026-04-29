@@ -23,7 +23,7 @@ const FIREBASE_CONFIG = {
   // ======================================================
   apiKey: "AIzaSyCcrdxILvl0rLQIOkcfvmSNhfwdU7YDrwg",
   authDomain: "kopmas-asem-kembar.firebaseapp.com",
-  databaseURL: "", // ← ISI INI! Firebase Console → Realtime Database → copy URL di atas
+  databaseURL: "https://kopmas-asem-kembar-default-rtdb.asia-southeast1.firebasedatabase.app", // ← ISI INI! Firebase Console → Realtime Database → copy URL di atas
   projectId: "kopmas-asem-kembar",
   storageBucket: "kopmas-asem-kembar.firebasestorage.app",
   messagingSenderId: "335932682830",
