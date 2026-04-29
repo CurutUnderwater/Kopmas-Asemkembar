@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="KOPMAS Asem Kembar — Kelompok Masyarakat penghasil pakcoy segar organik berkualitas tinggi. Pesan langsung dari kebun kami.">
+  <meta name="keywords" content="pakcoy, sayuran organik, KOPMAS, Asem Kembar, pertanian lokal, sayuran segar">
+  <meta name="author" content="KOPMAS Asem Kembar">
+  <meta name="theme-color" content="#2D6A4F">
+
+  <title>KOPMAS Asem Kembar — Pakcoy Segar Organik</title>
+
+  <!-- Favicon (emoji-based SVG) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='80'>🌿</text></svg>">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/public.css">
+  <link rel="stylesheet" href="css/admin.css">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+  <!-- SheetJS for Excel export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- html2pdf.js for PDF export -->
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+
+  <!-- Firebase SDK (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+</head>
+<body>
+  <!-- App Container -->
+  <div id="app">
+    <!-- Loading state -->
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem;">
+      <div style="font-size: 3rem; animation: pulse 1.5s ease infinite;">🌿</div>
+      <p style="color: #6C757D; font-family: 'Inter', sans-serif;">Memuat KOPMAS Asem Kembar...</p>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container"></div>
+
+  <!-- Scripts (order matters) -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-sync.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/pages/home.js"></script>
+  <script src="js/pages/profile.js"></script>
+  <script src="js/pages/products.js"></script>
+  <script src="js/pages/agenda.js"></script>
+  <script src="js/pages/order.js"></script>
+  <script src="js/pages/cart.js"></script>
+  <script src="js/pages/checkout.js"></script>
+  <script src="js/pages/reports.js"></script>
+  <script src="js/admin/dashboard.js"></script>
+  <script src="js/admin/manage-products.js"></script>
+  <script src="js/admin/manage-orders.js"></script>
+  <script src="js/admin/manage-agenda.js"></script>
+  <script src="js/admin/finance.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
