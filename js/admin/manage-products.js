@@ -56,6 +56,15 @@ function renderManageProducts() {
         </div>
         <form onsubmit="saveProduct(event)">
           <input type="hidden" id="product-edit-id">
+          <input type="hidden" id="product-image-base64">
+          <div class="form-group" style="text-align:center;">
+            <img id="product-image-preview" src="assets/images/pakcoy-product.png" alt="Preview" style="width:100px; height:100px; object-fit:cover; border-radius:var(--radius-sm); margin-bottom:var(--space-sm); border: 1px solid var(--color-border);">
+            <br>
+            <label class="btn btn-secondary btn-sm" style="cursor:pointer;">
+              📷 Upload Gambar
+              <input type="file" id="product-image-upload" accept="image/*" style="display:none;" onchange="handleProductImageUpload(event)">
+            </label>
+          </div>
           <div class="form-group">
             <label for="product-name">Nama Produk *</label>
             <input type="text" id="product-name" required placeholder="Nama produk">
@@ -105,6 +114,8 @@ function openProductModal(id) {
   const modal = document.getElementById('product-modal');
   const title = document.getElementById('product-modal-title');
   const editId = document.getElementById('product-edit-id');
+  const imagePreview = document.getElementById('product-image-preview');
+  const imageBase64 = document.getElementById('product-image-base64');
 
   if (id) {
     const product = DataStore.getProductById(id);
@@ -118,6 +129,11 @@ function openProductModal(id) {
     document.getElementById('product-unit').value = product.unit;
     document.getElementById('product-benefits').value = product.benefits || '';
     document.getElementById('product-quality').value = product.quality || '';
+    
+    // Set image
+    const imgUrl = product.image || 'assets/images/pakcoy-product.png';
+    imagePreview.src = imgUrl;
+    imageBase64.value = imgUrl;
   } else {
     title.textContent = 'Tambah Produk';
     editId.value = '';
@@ -128,9 +144,29 @@ function openProductModal(id) {
     document.getElementById('product-unit').value = 'ikat';
     document.getElementById('product-benefits').value = '';
     document.getElementById('product-quality').value = '';
+    
+    // Reset image
+    imagePreview.src = 'assets/images/pakcoy-product.png';
+    imageBase64.value = 'assets/images/pakcoy-product.png';
   }
 
+  // Reset file input
+  document.getElementById('product-image-upload').value = '';
+
   modal.classList.add('active');
+}
+
+function handleProductImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64 = e.target.result;
+    document.getElementById('product-image-preview').src = base64;
+    document.getElementById('product-image-base64').value = base64;
+  };
+  reader.readAsDataURL(file);
 }
 
 function closeProductModal() {
@@ -148,7 +184,7 @@ function saveProduct(e) {
     unit: document.getElementById('product-unit').value,
     benefits: document.getElementById('product-benefits').value,
     quality: document.getElementById('product-quality').value,
-    image: 'assets/images/pakcoy-product.png'
+    image: document.getElementById('product-image-base64').value || 'assets/images/pakcoy-product.png'
   };
 
   if (id) {
