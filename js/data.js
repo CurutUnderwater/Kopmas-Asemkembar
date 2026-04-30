@@ -116,10 +116,10 @@ const DataStore = {
 
   // --- Settings ---
   getSettings() { 
-    return this._get('kopmas_settings') || { qrisImage: '' }; 
+    return this._getObj('kopmas_settings') || { qrisImage: '' }; 
   },
   setSettings(data) { 
-    this._set('kopmas_settings', data); 
+    this._setObj('kopmas_settings', data); 
   },
 
   // --- Agenda ---
