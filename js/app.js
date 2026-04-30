@@ -143,6 +143,9 @@ function renderAdminLayout(pageTitle, contentHTML) {
           <a class="sidebar-link ${currentHash === '#/admin/agenda' ? 'active' : ''}" href="#/admin/agenda">
             <span class="link-icon">📅</span> Agenda
           </a>
+          <a class="sidebar-link ${currentHash === '#/admin/anggota' ? 'active' : ''}" href="#/admin/anggota">
+            <span class="link-icon">👥</span> Anggota
+          </a>
           <a class="sidebar-link ${currentHash === '#/admin/keuangan' ? 'active' : ''}" href="#/admin/keuangan">
             <span class="link-icon">💰</span> Keuangan
           </a>
@@ -273,6 +276,10 @@ function router() {
       case '#/admin/agenda':
         pageTitle = 'Manajemen Agenda';
         content = renderManageAgenda();
+        break;
+      case '#/admin/anggota':
+        pageTitle = 'Struktur Organisasi';
+        content = renderManageMembers();
         break;
       case '#/admin/keuangan':
         pageTitle = 'Laporan Keuangan';
