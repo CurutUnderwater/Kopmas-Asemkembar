@@ -114,6 +114,14 @@ const DataStore = {
     this.setOrders(items);
   },
 
+  // --- Settings ---
+  getSettings() { 
+    return this._get('kopmas_settings') || { qrisImage: '' }; 
+  },
+  setSettings(data) { 
+    this._set('kopmas_settings', data); 
+  },
+
   // --- Agenda ---
   getAgenda() { return this._get('kopmas_agenda'); },
   setAgenda(data) { this._set('kopmas_agenda', data); },
@@ -149,6 +157,9 @@ const DataStore = {
   },
   deleteFinance(id) {
     this.setFinance(this.getFinance().filter(f => f.id !== id));
+  },
+  deleteFinanceByOrderId(orderId) {
+    this.setFinance(this.getFinance().filter(f => f.orderId !== orderId));
   },
   getFinanceSummary() {
     const items = this.getFinance();
