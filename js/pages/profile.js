@@ -24,14 +24,14 @@ function renderProfile() {
               KOPMAS (Kelompok Masyarakat) Asem Kembar adalah sebuah kelompok masyarakat yang berdiri atas dasar kepedulian terhadap ketahanan pangan lokal dan pemberdayaan ekonomi masyarakat di kawasan Asem Kembar. 
             </p>
             <p class="mt-md text-light" style="line-height:1.8">
-              Didirikan pada tahun 2024, KOPMAS Asem Kembar berawal dari sekelompok warga yang memiliki visi yang sama: memanfaatkan lahan tidur di sekitar lingkungan untuk ditanami sayuran berkualitas, khususnya <strong>Pakcoy (Brassica rapa)</strong>.
+              Didirikan pada tahun 2020, KOPMAS Asem Kembar berawal dari sekelompok warga yang memiliki visi yang sama: memanfaatkan lahan tidur di sekitar lingkungan untuk ditanami sayuran berkualitas, khususnya <strong>Pakcoy (Brassica rapa)</strong> dengan hasil ± 20kg setiap 3 bulan.
             </p>
             <p class="mt-md text-light" style="line-height:1.8">
               Dengan semangat gotong royong dan kecintaan terhadap pertanian organik, kelompok ini terus berkembang dan kini menjadi salah satu pemasok pakcoy segar terpercaya di wilayah sekitar.
             </p>
             <div class="profile-stats">
               <div class="profile-stat">
-                <div class="stat-num">2024</div>
+                <div class="stat-num">2020</div>
                 <div class="stat-label">Tahun Berdiri</div>
               </div>
               <div class="profile-stat">
@@ -39,8 +39,8 @@ function renderProfile() {
                 <div class="stat-label">Anggota Aktif</div>
               </div>
               <div class="profile-stat">
-                <div class="stat-num">500+</div>
-                <div class="stat-label">KG Pakcoy/Bulan</div>
+                <div class="stat-num">20</div>
+                <div class="stat-label">KG Pakcoy / 3 Bulan</div>
               </div>
               <div class="profile-stat">
                 <div class="stat-num">3</div>
@@ -119,7 +119,7 @@ function renderProfile() {
               <div class="timeline-item">
                 <div class="timeline-date">Tahap 5</div>
                 <h4>Pemanenan</h4>
-                <p>Pakcoy dipanen setelah 25-30 hari masa tanam. Pemanenan dilakukan di pagi hari untuk menjaga kesegaran dan kualitas daun.</p>
+                <p>Pakcoy dipanen setelah kurang lebih 90 hari masa tanam. Pemanenan dilakukan di pagi hari untuk menjaga kesegaran dan kualitas daun.</p>
               </div>
               <div class="timeline-item">
                 <div class="timeline-date">Tahap 6</div>
@@ -135,7 +135,7 @@ function renderProfile() {
             <div class="card card-body mt-xl" style="background: linear-gradient(135deg, rgba(82,183,136,0.08), rgba(45,106,79,0.05));">
               <h4 class="text-primary mb-sm">📊 Siklus Tanam</h4>
               <p class="text-light" style="font-size: var(--fs-sm); line-height: 1.7;">
-                Dengan siklus tanam 25-30 hari, KOPMAS Asem Kembar mampu melakukan <strong>10-12 kali panen per tahun</strong>, menghasilkan rata-rata <strong>500+ kg pakcoy per bulan</strong> dari 3 lahan produktif.
+                Dengan siklus tanam sekitar 3 bulan, KOPMAS Asem Kembar mampu menghasilkan rata-rata <strong>± 20 kg pakcoy setiap kali panen</strong> dari lahan produktif yang dikelola dengan dedikasi tinggi.
               </p>
             </div>
           </div>
