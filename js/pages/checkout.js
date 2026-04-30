@@ -73,48 +73,32 @@ function renderCheckout() {
             <div id="qris-section" class="hidden">
               <div class="qris-display">
                 <div style="width:220px; height:220px; margin: 0 auto var(--space-md); background: white; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; border: 2px solid var(--color-border);">
-                  <svg width="180" height="180" viewBox="0 0 180 180">
-                    <rect width="180" height="180" fill="white"/>
-                    <!-- Simplified QR pattern -->
-                    <rect x="10" y="10" width="50" height="50" rx="4" fill="none" stroke="#1B4332" stroke-width="6"/>
-                    <rect x="22" y="22" width="26" height="26" rx="2" fill="#1B4332"/>
-                    <rect x="120" y="10" width="50" height="50" rx="4" fill="none" stroke="#1B4332" stroke-width="6"/>
-                    <rect x="132" y="22" width="26" height="26" rx="2" fill="#1B4332"/>
-                    <rect x="10" y="120" width="50" height="50" rx="4" fill="none" stroke="#1B4332" stroke-width="6"/>
-                    <rect x="22" y="132" width="26" height="26" rx="2" fill="#1B4332"/>
-                    <!-- Center pattern -->
-                    <rect x="70" y="10" width="10" height="10" fill="#1B4332"/>
-                    <rect x="90" y="10" width="10" height="10" fill="#1B4332"/>
-                    <rect x="70" y="30" width="10" height="10" fill="#1B4332"/>
-                    <rect x="100" y="30" width="10" height="10" fill="#1B4332"/>
-                    <rect x="70" y="50" width="10" height="10" fill="#1B4332"/>
-                    <rect x="90" y="50" width="10" height="10" fill="#1B4332"/>
-                    <rect x="10" y="70" width="10" height="10" fill="#1B4332"/>
-                    <rect x="30" y="70" width="10" height="10" fill="#1B4332"/>
-                    <rect x="50" y="70" width="10" height="10" fill="#1B4332"/>
-                    <rect x="70" y="70" width="40" height="40" rx="6" fill="#2D6A4F"/>
-                    <text x="90" y="95" text-anchor="middle" fill="white" font-size="14" font-weight="bold">QRIS</text>
-                    <rect x="120" y="70" width="10" height="10" fill="#1B4332"/>
-                    <rect x="140" y="70" width="10" height="10" fill="#1B4332"/>
-                    <rect x="160" y="70" width="10" height="10" fill="#1B4332"/>
-                    <rect x="120" y="90" width="10" height="10" fill="#1B4332"/>
-                    <rect x="150" y="90" width="10" height="10" fill="#1B4332"/>
-                    <rect x="70" y="120" width="10" height="10" fill="#1B4332"/>
-                    <rect x="90" y="120" width="10" height="10" fill="#1B4332"/>
-                    <rect x="70" y="140" width="10" height="10" fill="#1B4332"/>
-                    <rect x="100" y="140" width="10" height="10" fill="#1B4332"/>
-                    <rect x="120" y="120" width="50" height="50" rx="4" fill="none" stroke="#52B788" stroke-width="3" stroke-dasharray="6"/>
-                    <rect x="130" y="130" width="30" height="30" rx="2" fill="#52B788" opacity="0.2"/>
-                    <text x="145" y="150" text-anchor="middle" fill="#2D6A4F" font-size="10" font-weight="bold">PAY</text>
-                    <rect x="70" y="160" width="10" height="10" fill="#1B4332"/>
-                    <rect x="90" y="160" width="10" height="10" fill="#1B4332"/>
-                  </svg>
+                  ${DataStore.getSettings().qrisImage 
+                    ? `<img src="${DataStore.getSettings().qrisImage}" alt="QRIS" style="max-width:200px; max-height:200px; object-fit:contain;">` 
+                    : `<svg width="180" height="180" viewBox="0 0 180 180">
+                        <rect width="180" height="180" fill="white"/>
+                        <rect x="10" y="10" width="50" height="50" rx="4" fill="none" stroke="#1B4332" stroke-width="6"/>
+                        <rect x="22" y="22" width="26" height="26" rx="2" fill="#1B4332"/>
+                        <rect x="120" y="10" width="50" height="50" rx="4" fill="none" stroke="#1B4332" stroke-width="6"/>
+                        <rect x="132" y="22" width="26" height="26" rx="2" fill="#1B4332"/>
+                        <rect x="10" y="120" width="50" height="50" rx="4" fill="none" stroke="#1B4332" stroke-width="6"/>
+                        <rect x="22" y="132" width="26" height="26" rx="2" fill="#1B4332"/>
+                        <rect x="70" y="70" width="40" height="40" rx="6" fill="#2D6A4F"/>
+                        <text x="90" y="95" text-anchor="middle" fill="white" font-size="14" font-weight="bold">QRIS</text>
+                      </svg>`
+                  }
                 </div>
                 <p style="font-weight: 600; color: var(--color-primary);">Scan QR Code untuk Pembayaran</p>
                 <p style="font-size: var(--fs-sm); color: var(--color-text-light);">Gunakan aplikasi e-wallet atau mobile banking Anda</p>
                 <p style="font-size: var(--fs-xl); font-weight: 800; color: var(--color-primary); margin-top: var(--space-md);">
                   Rp ${subtotal.toLocaleString('id-ID')}
                 </p>
+                <div style="margin-top: var(--space-lg); text-align: left; border-top: 1px dashed var(--color-border); padding-top: var(--space-md);">
+                  <label for="qris-proof-upload" style="font-weight: 600; display: block; margin-bottom: 8px;">Upload Bukti Transfer *</label>
+                  <input type="file" id="qris-proof-upload" accept="image/*" style="width: 100%; border: 1px solid var(--color-border); padding: 8px; border-radius: var(--radius-sm);" onchange="handleQrisProofUpload(event)">
+                  <input type="hidden" id="qris-proof-base64">
+                </div>
+
               </div>
             </div>
 
@@ -184,38 +168,22 @@ function placeOrder() {
   });
   const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 
-  // If QRIS, simulate payment gateway delay
+  // If QRIS, validate proof
+  let paymentProofBase64 = null;
   if (selectedPayment === 'qris') {
-    // Show Loading Overlay
-    const overlay = document.createElement('div');
-    overlay.style.position = 'fixed';
-    overlay.style.top = '0'; overlay.style.left = '0';
-    overlay.style.width = '100vw'; overlay.style.height = '100vh';
-    overlay.style.backgroundColor = 'rgba(255,255,255,0.9)';
-    overlay.style.zIndex = '9999';
-    overlay.style.display = 'flex';
-    overlay.style.flexDirection = 'column';
-    overlay.style.alignItems = 'center';
-    overlay.style.justifyContent = 'center';
-    overlay.innerHTML = `
-      <div style="font-size: 3rem; animation: pulse 1.5s infinite;">⏳</div>
-      <h3 class="mt-md">Memverifikasi Pembayaran...</h3>
-      <p class="text-light text-center" style="max-width: 300px;">Mohon tunggu, sistem sedang mengecek status pembayaran Anda dengan Payment Gateway.</p>
-    `;
-    document.body.appendChild(overlay);
-
-    // Simulate 3.5s delay for webhook/callback
-    setTimeout(() => {
-      document.body.removeChild(overlay);
-      finalizeOrder(name, phone, address, notes, items, total, 'diproses');
-    }, 3500);
-  } else {
-    // If COD, process immediately with status 'menunggu'
-    finalizeOrder(name, phone, address, notes, items, total, 'menunggu');
+    const proofInput = document.getElementById('qris-proof-base64');
+    if (!proofInput || !proofInput.value) {
+      showToast('Mohon upload bukti transfer terlebih dahulu', 'error');
+      return;
+    }
+    paymentProofBase64 = proofInput.value;
   }
+
+  // Finalize immediately
+  finalizeOrder(name, phone, address, notes, items, total, selectedPayment === 'qris' ? 'diproses' : 'menunggu', paymentProofBase64);
 }
 
-function finalizeOrder(name, phone, address, notes, items, total, status) {
+function finalizeOrder(name, phone, address, notes, items, total, status, paymentProof) {
   const cart = DataStore.getCart();
   
   // Create order
@@ -224,13 +192,15 @@ function finalizeOrder(name, phone, address, notes, items, total, status) {
     items,
     total,
     payment: selectedPayment,
-    status: status
+    status: status,
+    paymentProof: paymentProof
   });
 
   // Only add income if payment is already processed (QRIS)
   // For COD, admin will add it when status is updated to 'selesai'
   if (status === 'diproses' && selectedPayment === 'qris') {
     DataStore.addFinance({
+      orderId: order.id,
       type: 'pemasukan',
       category: 'Penjualan Online',
       description: `Pesanan ${order.id} — ${name}`,
@@ -279,7 +249,7 @@ function finalizeOrder(name, phone, address, notes, items, total, status) {
           <p class="text-light mt-lg" style="font-size: var(--fs-sm);">
             ${selectedPayment === 'cod' 
               ? 'Siapkan pembayaran tunai saat produk diantar ke alamat Anda.' 
-              : 'Terima kasih telah menggunakan pembayaran digital.'}
+              : 'Terima kasih, bukti pembayaran Anda telah kami simpan.'}
           </p>
           <div class="flex justify-center gap-md mt-xl">
             <a href="#/" class="btn btn-secondary">← Kembali ke Beranda</a>
@@ -289,4 +259,16 @@ function finalizeOrder(name, phone, address, notes, items, total, status) {
       </div>
     </section>
   ` + renderFooter();
+}
+
+function handleQrisProofUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('qris-proof-base64').value = e.target.result;
+    showToast('Bukti transfer berhasil dipilih', 'success');
+  };
+  reader.readAsDataURL(file);
 }
