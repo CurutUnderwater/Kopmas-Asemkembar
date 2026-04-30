@@ -104,7 +104,7 @@ const DataStore = {
     const items = this.getOrders();
     order.id = 'ORD-' + Date.now();
     order.createdAt = new Date().toISOString();
-    order.status = 'menunggu';
+    order.status = order.status || 'menunggu';
     items.push(order);
     this.setOrders(items);
     return order;
