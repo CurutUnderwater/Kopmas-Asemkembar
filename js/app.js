@@ -54,7 +54,6 @@ function renderNavbar() {
           <a href="#/produk" class="nav-link" data-page="produk">Produk</a>
           <a href="#/agenda" class="nav-link" data-page="agenda">Agenda</a>
           <a href="#/pesan" class="nav-link" data-page="pesan">Pesan</a>
-          <a href="#/laporan" class="nav-link" data-page="laporan">📊 Laporan</a>
           <a href="#/keranjang" class="nav-link nav-cart" data-page="keranjang">
             🛒 ${cartCount > 0 ? `<span class="cart-count">${cartCount}</span>` : ''}
           </a>
@@ -91,7 +90,6 @@ function renderFooter() {
             <a href="#/profil">Profil</a>
             <a href="#/produk">Produk</a>
             <a href="#/agenda">Agenda</a>
-            <a href="#/laporan">Laporan Keuangan</a>
           </div>
           <div class="footer-col">
             <h5>Layanan</h5>
@@ -333,9 +331,7 @@ function router() {
     case '#/checkout':
       pageContent = renderCheckout();
       break;
-    case '#/laporan':
-      pageContent = renderReports();
-      break;
+
     default:
       pageContent = `
         <div class="page-header">
