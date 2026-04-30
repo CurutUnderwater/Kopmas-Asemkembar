@@ -122,6 +122,25 @@ const DataStore = {
     this._setObj('kopmas_settings', data); 
   },
 
+  // --- Members (Struktur Organisasi) ---
+  getMembers() { return this._get('kopmas_members'); },
+  setMembers(data) { this._set('kopmas_members', data); },
+  addMember(member) {
+    const items = this.getMembers();
+    member.id = 'MBR-' + Date.now();
+    member.createdAt = new Date().toISOString();
+    items.push(member);
+    this.setMembers(items);
+    return member;
+  },
+  updateMember(id, updates) {
+    const items = this.getMembers().map(m => m.id === id ? { ...m, ...updates } : m);
+    this.setMembers(items);
+  },
+  deleteMember(id) {
+    this.setMembers(this.getMembers().filter(m => m.id !== id));
+  },
+
   // --- Agenda ---
   getAgenda() { return this._get('kopmas_agenda'); },
   setAgenda(data) { this._set('kopmas_agenda', data); },
@@ -427,6 +446,14 @@ const DataStore = {
         quality: 'Dikemas rapi, tahan 5-7 hari di kulkas',
         createdAt: '2026-03-10T08:00:00.000Z'
       }
+    ]);
+
+    // Members (Struktur Organisasi)
+    this.setMembers([
+      { id: 'MBR-001', name: 'Pak Suryo', role: 'Ketua', image: '', order: 1 },
+      { id: 'MBR-002', name: 'Bu Kartini', role: 'Sekretaris', image: '', order: 2 },
+      { id: 'MBR-003', name: 'Pak Darmo', role: 'Bendahara', image: '', order: 3 },
+      { id: 'MBR-004', name: 'Mas Adi', role: 'Koordinator Lapangan', image: '', order: 4 }
     ]);
 
     // Agenda
