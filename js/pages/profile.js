@@ -135,7 +135,7 @@ function renderProfile() {
             <div class="card card-body mt-xl" style="background: linear-gradient(135deg, rgba(82,183,136,0.08), rgba(45,106,79,0.05));">
               <h4 class="text-primary mb-sm">📊 Siklus Tanam</h4>
               <p class="text-light" style="font-size: var(--fs-sm); line-height: 1.7;">
-                Dengan siklus tanam sekitar 3 bulan, KOPMAS Asem Kembar mampu menghasilkan rata-rata <strong>± 20 kg pakcoy setiap kali panen</strong> dari lahan produktif yang dikelola dengan dedikasi tinggi.
+                Dengan siklus tanam sekitar 3 bulan, KOPMAS Asem Kembar mampu menghasilkan rata-rata <strong>± 100 kg pakcoy setiap kali panen</strong> dari lahan produktif yang dikelola dengan dedikasi tinggi.
               </p>
             </div>
           </div>
