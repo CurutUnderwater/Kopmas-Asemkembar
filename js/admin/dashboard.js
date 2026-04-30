@@ -66,6 +66,26 @@ function renderAdminDashboard() {
       </div>
     </div>
 
+    <!-- Store Settings -->
+    <div class="recent-section" style="margin-bottom: var(--space-xl);">
+      <div class="section-top">
+        <h4>Pengaturan Toko (QRIS)</h4>
+      </div>
+      <div class="card card-body" style="display: flex; gap: var(--space-lg); align-items: flex-start;">
+        <div style="flex: 1;">
+          <p class="text-light mb-md">Unggah gambar kode QRIS toko Anda agar pelanggan dapat memindainya saat proses pembayaran. Jika kosong, sistem akan menggunakan QRIS bawaan.</p>
+          <label class="btn btn-secondary btn-sm" style="cursor:pointer;">
+            📷 Upload QRIS Baru
+            <input type="file" accept="image/*" style="display:none;" onchange="handleQRISUpload(event)">
+          </label>
+        </div>
+        <div>
+          <img id="admin-qris-preview" src="${DataStore.getSettings().qrisImage || ''}" alt="QRIS Preview" style="width: 150px; height: 150px; object-fit: contain; border: 2px dashed var(--color-border); border-radius: var(--radius-sm); display: ${DataStore.getSettings().qrisImage ? 'block' : 'none'};">
+          ${!DataStore.getSettings().qrisImage ? '<div id="qris-placeholder" style="width:150px; height:150px; background:var(--color-background-alt); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--color-text-light); text-align:center; padding:10px; font-size:var(--fs-xs);">Belum ada QRIS</div>' : ''}
+        </div>
+      </div>
+    </div>
+
     <!-- Recent Orders -->
     <div class="recent-section">
       <div class="section-top">
@@ -100,6 +120,35 @@ function renderAdminDashboard() {
       </div>
     </div>
   `;
+}
+
+function handleQRISUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64 = e.target.result;
+    
+    // Save to settings
+    const settings = DataStore.getSettings();
+    settings.qrisImage = base64;
+    DataStore.setSettings(settings);
+
+    // Update UI
+    const preview = document.getElementById('admin-qris-preview');
+    if (preview) {
+      preview.src = base64;
+      preview.style.display = 'block';
+    }
+    const placeholder = document.getElementById('qris-placeholder');
+    if (placeholder) {
+      placeholder.style.display = 'none';
+    }
+
+    showToast('Gambar QRIS berhasil disimpan', 'success');
+  };
+  reader.readAsDataURL(file);
 }
 
 function initDashboardCharts() {
