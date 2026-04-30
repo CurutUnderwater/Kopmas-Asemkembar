@@ -94,7 +94,24 @@ function filterOrders(status) {
 
 function updateOrderStatusAdmin(id, status) {
   if (!status) return;
+  
+  const order = DataStore.getOrders().find(o => o.id === id);
+  const oldStatus = order ? order.status : null;
+
   DataStore.updateOrderStatus(id, status);
+
+  // If order is completed and it's COD, record the income.
+  // (QRIS income is already recorded during checkout simulation)
+  if (status === 'selesai' && oldStatus !== 'selesai' && order && order.payment === 'cod') {
+    DataStore.addFinance({
+      type: 'pemasukan',
+      category: 'Penjualan Online (COD)',
+      description: `Pesanan ${order.id} — ${order.customer.name}`,
+      amount: order.total,
+      date: new Date().toISOString().split('T')[0]
+    });
+  }
+
   showToast(`Status pesanan ${id} diubah ke "${status}"`, 'success');
   navigateTo('#/admin/pesanan');
 }
