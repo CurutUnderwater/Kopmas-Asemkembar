@@ -24,7 +24,7 @@ function renderProfile() {
               KOPMAS (Kelompok Masyarakat) Asem Kembar adalah sebuah kelompok masyarakat yang berdiri atas dasar kepedulian terhadap ketahanan pangan lokal dan pemberdayaan ekonomi masyarakat di kawasan Asem Kembar. 
             </p>
             <p class="mt-md text-light" style="line-height:1.8">
-              Didirikan pada tahun 2020, KOPMAS Asem Kembar berawal dari sekelompok warga yang memiliki visi yang sama: memanfaatkan lahan tidur di sekitar lingkungan untuk ditanami sayuran berkualitas, khususnya <strong>Pakcoy (Brassica rapa)</strong> dengan hasil ± 20kg setiap 3 bulan.
+              Didirikan pada tahun 2020, KOPMAS Asem Kembar berawal dari sekelompok warga yang memiliki visi yang sama: memanfaatkan lahan tidur di sekitar lingkungan untuk ditanami sayuran berkualitas, khususnya <strong>Pakcoy (Brassica rapa)</strong> dengan hasil ± 100kg setiap 3 bulan.
             </p>
             <p class="mt-md text-light" style="line-height:1.8">
               Dengan semangat gotong royong dan kecintaan terhadap pertanian organik, kelompok ini terus berkembang dan kini menjadi salah satu pemasok pakcoy segar terpercaya di wilayah sekitar.
@@ -39,11 +39,11 @@ function renderProfile() {
                 <div class="stat-label">Anggota Aktif</div>
               </div>
               <div class="profile-stat">
-                <div class="stat-num">20</div>
+                <div class="stat-num">100</div>
                 <div class="stat-label">KG Pakcoy / 3 Bulan</div>
               </div>
               <div class="profile-stat">
-                <div class="stat-num">3</div>
+                <div class="stat-num">1</div>
                 <div class="stat-label">Lahan Produktif</div>
               </div>
             </div>
@@ -152,10 +152,10 @@ function renderProfile() {
         </div>
         <div class="grid grid-4 stagger">
           ${[
-            { name: 'Pak Suryo', role: 'Ketua', emoji: '👨‍🌾' },
-            { name: 'Bu Kartini', role: 'Sekretaris', emoji: '👩‍💼' },
-            { name: 'Pak Darmo', role: 'Bendahara', emoji: '👨‍💼' },
-            { name: 'Mas Adi', role: 'Koordinator Lapangan', emoji: '👷' }
+            { name: 'Pak Rusdi', role: 'Ketua', emoji: '👨‍🌾' },
+            { name: 'Bu Amba', role: 'Sekretaris', emoji: '👩‍💼' },
+            { name: 'Pak Darmo Ngawi', role: 'Bendahara', emoji: '👨‍💼' },
+            { name: 'Mas Adi Indomi', role: 'Koordinator Lapangan', emoji: '👷' }
           ].map(m => `
             <div class="card text-center">
               <div class="card-body">
