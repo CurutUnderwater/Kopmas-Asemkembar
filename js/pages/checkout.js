@@ -72,21 +72,8 @@ function renderCheckout() {
 
             <div id="qris-section" class="hidden">
               <div class="qris-display">
-                <div style="width:220px; height:220px; margin: 0 auto var(--space-md); background: white; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; border: 2px solid var(--color-border);">
-                  ${DataStore.getSettings().qrisImage 
-                    ? `<img src="${DataStore.getSettings().qrisImage}" alt="QRIS" style="max-width:200px; max-height:200px; object-fit:contain;">` 
-                    : `<svg width="180" height="180" viewBox="0 0 180 180">
-                        <rect width="180" height="180" fill="white"/>
-                        <rect x="10" y="10" width="50" height="50" rx="4" fill="none" stroke="#1B4332" stroke-width="6"/>
-                        <rect x="22" y="22" width="26" height="26" rx="2" fill="#1B4332"/>
-                        <rect x="120" y="10" width="50" height="50" rx="4" fill="none" stroke="#1B4332" stroke-width="6"/>
-                        <rect x="132" y="22" width="26" height="26" rx="2" fill="#1B4332"/>
-                        <rect x="10" y="120" width="50" height="50" rx="4" fill="none" stroke="#1B4332" stroke-width="6"/>
-                        <rect x="22" y="132" width="26" height="26" rx="2" fill="#1B4332"/>
-                        <rect x="70" y="70" width="40" height="40" rx="6" fill="#2D6A4F"/>
-                        <text x="90" y="95" text-anchor="middle" fill="white" font-size="14" font-weight="bold">QRIS</text>
-                      </svg>`
-                  }
+                <div id="qris-image-slot" style="width:220px; height:220px; margin: 0 auto var(--space-md); background: white; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; border: 2px solid var(--color-border);">
+                  <!-- QRIS image will be injected dynamically by selectPayment() -->
                 </div>
                 <p style="font-weight: 600; color: var(--color-primary);">Scan QR Code untuk Pembayaran</p>
                 <p style="font-size: var(--fs-sm); color: var(--color-text-light);">Gunakan aplikasi e-wallet atau mobile banking Anda</p>
@@ -143,6 +130,22 @@ function selectPayment(method, el) {
   if (method === 'qris') {
     qrisSection.classList.remove('hidden');
     btnPlaceOrder.textContent = 'Bayar Sekarang (QRIS)';
+
+    // Dynamically inject QRIS image each time it's shown
+    // so it always uses the latest data (from Firebase sync)
+    const qrisImageSlot = document.getElementById('qris-image-slot');
+    if (qrisImageSlot) {
+      const qrisImage = DataStore.getSettings().qrisImage;
+      if (qrisImage) {
+        qrisImageSlot.innerHTML = `<img src="${qrisImage}" alt="QRIS" style="max-width:200px; max-height:200px; object-fit:contain;">`;
+      } else {
+        qrisImageSlot.innerHTML = `
+          <div style="text-align:center; color: var(--color-text-light);">
+            <div style="font-size:2.5rem;">📷</div>
+            <p style="font-size:var(--fs-xs); margin-top:8px;">QRIS belum diatur admin</p>
+          </div>`;
+      }
+    }
   } else {
     qrisSection.classList.add('hidden');
     btnPlaceOrder.textContent = 'Konfirmasi Pesanan (COD)';
