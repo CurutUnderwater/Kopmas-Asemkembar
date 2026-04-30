@@ -101,15 +101,20 @@ function updateOrderStatusAdmin(id, status) {
   DataStore.updateOrderStatus(id, status);
 
   // If order is completed and it's COD, record the income.
-  // (QRIS income is already recorded during checkout simulation)
   if (status === 'selesai' && oldStatus !== 'selesai' && order && order.payment === 'cod') {
     DataStore.addFinance({
+      orderId: order.id,
       type: 'pemasukan',
       category: 'Penjualan Online (COD)',
       description: `Pesanan ${order.id} — ${order.customer.name}`,
       amount: order.total,
       date: new Date().toISOString().split('T')[0]
     });
+  }
+
+  // If order is cancelled, delete associated finance records
+  if (status === 'dibatalkan' && oldStatus !== 'dibatalkan' && order) {
+    DataStore.deleteFinanceByOrderId(order.id);
   }
 
   showToast(`Status pesanan ${id} diubah ke "${status}"`, 'success');
@@ -154,6 +159,14 @@ function viewOrderDetail(id) {
         <span>Total</span>
         <span>Rp ${order.total.toLocaleString('id-ID')}</span>
       </div>
+      
+      ${order.paymentProof ? `
+        <hr style="border: none; border-top: 1px solid var(--color-border-light);">
+        <h5>Bukti Transfer</h5>
+        <div style="text-align:center; margin-top: var(--space-sm);">
+          <img src="${order.paymentProof}" alt="Bukti Transfer" style="max-width: 100%; max-height: 400px; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+        </div>
+      ` : ''}
     </div>
   `;
 
