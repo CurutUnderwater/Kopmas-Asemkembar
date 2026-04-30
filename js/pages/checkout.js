@@ -118,8 +118,8 @@ function renderCheckout() {
               </div>
             </div>
 
-            <button class="btn btn-primary btn-lg mt-xl" style="width: 100%;" onclick="placeOrder()">
-              Konfirmasi Pesanan
+            <button id="btn-place-order" class="btn btn-primary btn-lg mt-xl" style="width: 100%;" onclick="placeOrder()">
+              Konfirmasi Pesanan (COD)
             </button>
           </div>
 
@@ -154,10 +154,14 @@ function selectPayment(method, el) {
   el.querySelector('input').checked = true;
 
   const qrisSection = document.getElementById('qris-section');
+  const btnPlaceOrder = document.getElementById('btn-place-order');
+  
   if (method === 'qris') {
     qrisSection.classList.remove('hidden');
+    btnPlaceOrder.textContent = 'Bayar Sekarang (QRIS)';
   } else {
     qrisSection.classList.add('hidden');
+    btnPlaceOrder.textContent = 'Konfirmasi Pesanan (COD)';
   }
 }
 
@@ -180,22 +184,60 @@ function placeOrder() {
   });
   const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 
+  // If QRIS, simulate payment gateway delay
+  if (selectedPayment === 'qris') {
+    // Show Loading Overlay
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0'; overlay.style.left = '0';
+    overlay.style.width = '100vw'; overlay.style.height = '100vh';
+    overlay.style.backgroundColor = 'rgba(255,255,255,0.9)';
+    overlay.style.zIndex = '9999';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.innerHTML = `
+      <div style="font-size: 3rem; animation: pulse 1.5s infinite;">⏳</div>
+      <h3 class="mt-md">Memverifikasi Pembayaran...</h3>
+      <p class="text-light text-center" style="max-width: 300px;">Mohon tunggu, sistem sedang mengecek status pembayaran Anda dengan Payment Gateway.</p>
+    `;
+    document.body.appendChild(overlay);
+
+    // Simulate 3.5s delay for webhook/callback
+    setTimeout(() => {
+      document.body.removeChild(overlay);
+      finalizeOrder(name, phone, address, notes, items, total, 'diproses');
+    }, 3500);
+  } else {
+    // If COD, process immediately with status 'menunggu'
+    finalizeOrder(name, phone, address, notes, items, total, 'menunggu');
+  }
+}
+
+function finalizeOrder(name, phone, address, notes, items, total, status) {
+  const cart = DataStore.getCart();
+  
   // Create order
   const order = DataStore.addOrder({
     customer: { name, phone, address, notes },
     items,
     total,
-    payment: selectedPayment
+    payment: selectedPayment,
+    status: status
   });
 
-  // Add as income in finance
-  DataStore.addFinance({
-    type: 'pemasukan',
-    category: 'Penjualan Online',
-    description: `Pesanan ${order.id} — ${name}`,
-    amount: total,
-    date: new Date().toISOString().split('T')[0]
-  });
+  // Only add income if payment is already processed (QRIS)
+  // For COD, admin will add it when status is updated to 'selesai'
+  if (status === 'diproses' && selectedPayment === 'qris') {
+    DataStore.addFinance({
+      type: 'pemasukan',
+      category: 'Penjualan Online',
+      description: `Pesanan ${order.id} — ${name}`,
+      amount: total,
+      date: new Date().toISOString().split('T')[0]
+    });
+  }
 
   // Update stock
   cart.forEach(c => {
@@ -213,7 +255,7 @@ function placeOrder() {
   app.innerHTML = renderNavbar() + `
     <div class="page-header">
       <div class="container">
-        <h1>Pesanan Berhasil</h1>
+        <h1>Pesanan ${selectedPayment === 'qris' ? 'Berhasil Dibayar' : 'Diterima'}</h1>
       </div>
     </div>
     <section class="section">
@@ -221,17 +263,23 @@ function placeOrder() {
         <div class="order-success">
           <div class="success-icon">✅</div>
           <h2>Terima Kasih!</h2>
-          <p class="text-light mt-md mb-lg">Pesanan Anda telah berhasil dibuat. Berikut detail pesanan Anda:</p>
+          <p class="text-light mt-md mb-lg">
+            ${selectedPayment === 'qris' 
+              ? 'Pembayaran Anda telah berhasil diverifikasi oleh sistem. Pesanan Anda akan segera diproses.' 
+              : 'Pesanan Anda telah kami terima dan sedang menunggu konfirmasi admin.'}
+          </p>
           <div class="card card-body text-left">
             <div class="cart-summary-row"><span class="font-semibold">No. Pesanan</span><span class="badge badge-primary">${order.id}</span></div>
             <div class="cart-summary-row"><span class="font-semibold">Nama</span><span>${name}</span></div>
             <div class="cart-summary-row"><span class="font-semibold">Telepon</span><span>${phone}</span></div>
             <div class="cart-summary-row"><span class="font-semibold">Alamat</span><span>${address}</span></div>
-            <div class="cart-summary-row"><span class="font-semibold">Pembayaran</span><span class="badge ${selectedPayment === 'qris' ? 'badge-info' : 'badge-accent'}">${selectedPayment === 'qris' ? 'QRIS' : 'COD'}</span></div>
+            <div class="cart-summary-row"><span class="font-semibold">Pembayaran</span><span class="badge ${selectedPayment === 'qris' ? 'badge-info' : 'badge-accent'}">${selectedPayment === 'qris' ? 'QRIS (Lunas)' : 'COD'}</span></div>
             <div class="cart-summary-row total"><span>Total</span><span>Rp ${total.toLocaleString('id-ID')}</span></div>
           </div>
           <p class="text-light mt-lg" style="font-size: var(--fs-sm);">
-            ${selectedPayment === 'cod' ? 'Siapkan pembayaran tunai saat produk diantar ke alamat Anda.' : 'Pastikan Anda sudah melakukan pembayaran melalui QRIS.'}
+            ${selectedPayment === 'cod' 
+              ? 'Siapkan pembayaran tunai saat produk diantar ke alamat Anda.' 
+              : 'Terima kasih telah menggunakan pembayaran digital.'}
           </p>
           <div class="flex justify-center gap-md mt-xl">
             <a href="#/" class="btn btn-secondary">← Kembali ke Beranda</a>
