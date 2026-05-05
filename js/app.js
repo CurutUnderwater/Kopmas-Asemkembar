@@ -57,7 +57,6 @@ function renderNavbar() {
           <a href="#/keranjang" class="nav-link nav-cart" data-page="keranjang">
             🛒 ${cartCount > 0 ? `<span class="cart-count">${cartCount}</span>` : ''}
           </a>
-          <a href="#/admin/login" class="nav-link nav-admin-link" data-page="admin">⚙️ Admin</a>
         </div>
         <button class="nav-toggle" onclick="toggleMobileNav()" aria-label="Menu">
           <span></span><span></span><span></span>
@@ -95,7 +94,6 @@ function renderFooter() {
             <h5>Layanan</h5>
             <a href="#/pesan">Pesan Produk</a>
             <a href="#/keranjang">Keranjang</a>
-            <a href="#/admin/login">Admin Login</a>
           </div>
           <div class="footer-col">
             <h5>Kontak</h5>
