@@ -243,9 +243,9 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-text);
 }
 
-h1 { font-size: var(--fs-4xl); }
-h2 { font-size: var(--fs-3xl); }
-h3 { font-size: var(--fs-2xl); }
+h1 { font-size: clamp(var(--fs-3xl), 5vw, var(--fs-5xl)); }
+h2 { font-size: clamp(var(--fs-2xl), 4vw, var(--fs-4xl)); }
+h3 { font-size: clamp(var(--fs-xl), 3vw, var(--fs-3xl)); }
 h4 { font-size: var(--fs-xl); }
 h5 { font-size: var(--fs-lg); }
 h6 { font-size: var(--fs-md); }
@@ -751,14 +751,11 @@ tbody tr:last-child td {
 /* --- Responsive --- */
 /* Desktop Large (>1400px) */
 @media (min-width: 1400px) {
-  html { font-size: 17px; }
   .container { max-width: 1320px; }
-  h1 { font-size: var(--fs-5xl); }
 }
 
 /* Desktop XL (>1600px) */
 @media (min-width: 1600px) {
-  html { font-size: 18px; }
   .container { max-width: 1440px; }
 }
 
@@ -768,12 +765,6 @@ tbody tr:last-child td {
 }
 
 @media (max-width: 768px) {
-  html { font-size: 15px; }
-
-  h1 { font-size: var(--fs-3xl); }
-  h2 { font-size: var(--fs-2xl); }
-  h3 { font-size: var(--fs-xl); }
-
   .container { padding: 0 var(--space-md); }
   .section { padding: var(--space-3xl) 0; }
   .section-header { margin-bottom: var(--space-2xl); }
@@ -785,11 +776,6 @@ tbody tr:last-child td {
 }
 
 @media (max-width: 480px) {
-  html { font-size: 14px; }
-
-  h1 { font-size: var(--fs-2xl); }
-  h2 { font-size: var(--fs-xl); }
-
   .container { padding: 0 var(--space-sm); }
   .section { padding: var(--space-2xl) 0; }
 
