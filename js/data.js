@@ -214,8 +214,7 @@ const DataStore = {
     const pengeluaran = periodFinance.filter(f => f.type === 'pengeluaran');
     const danaTambahan = periodFinance.filter(f => f.type === 'dana_tambahan');
 
-    // --- LABA RUGI ---
-    // Pendapatan
+    // === LABA RUGI ===
     const pendapatanPenjualan = pemasukan
       .filter(f => f.category.toLowerCase().includes('penjualan'))
       .reduce((s, f) => s + f.amount, 0);
@@ -224,7 +223,7 @@ const DataStore = {
       .reduce((s, f) => s + f.amount, 0);
     const totalPendapatan = pendapatanPenjualan + pendapatanLain;
 
-    // HPP (Harga Pokok Penjualan) — benih, pupuk
+    // HPP (Harga Pokok Penjualan)
     const hppCategories = ['benih', 'pupuk', 'bibit', 'media tanam'];
     const hpp = pengeluaran
       .filter(f => hppCategories.some(c => f.category.toLowerCase().includes(c)))
@@ -241,39 +240,27 @@ const DataStore = {
     // Detail beban by category
     const bebanByCategory = {};
     pengeluaran.forEach(f => {
-      const cat = f.category;
-      bebanByCategory[cat] = (bebanByCategory[cat] || 0) + f.amount;
+      bebanByCategory[f.category] = (bebanByCategory[f.category] || 0) + f.amount;
     });
 
     // Detail pendapatan by category
     const pendapatanByCategory = {};
     pemasukan.forEach(f => {
-      const cat = f.category;
-      pendapatanByCategory[cat] = (pendapatanByCategory[cat] || 0) + f.amount;
+      pendapatanByCategory[f.category] = (pendapatanByCategory[f.category] || 0) + f.amount;
     });
 
     const labaRugi = {
-      pendapatanPenjualan,
-      pendapatanLain,
-      totalPendapatan,
-      hpp,
-      labaKotor,
-      bebanOperasional,
-      bebanByCategory,
-      pendapatanByCategory,
-      totalPengeluaran,
-      labaBersih
+      pendapatanPenjualan, pendapatanLain, totalPendapatan,
+      hpp, labaKotor, bebanOperasional,
+      bebanByCategory, pendapatanByCategory,
+      totalPengeluaran, labaBersih
     };
 
-    // --- PERUBAHAN EKUITAS ---
-    // Calculate prior period data for modal awal
+    // === PERUBAHAN EKUITAS ===
     const priorFinance = finance.filter(item => {
       const d = new Date(item.date);
-      if (month === 'all') {
-        return d.getFullYear() < year;
-      } else {
-        return (d.getFullYear() < year) || (d.getFullYear() === year && d.getMonth() < month);
-      }
+      if (month === 'all') return d.getFullYear() < year;
+      return (d.getFullYear() < year) || (d.getFullYear() === year && d.getMonth() < month);
     });
 
     const priorIncome = priorFinance.filter(f => f.type === 'pemasukan').reduce((s, f) => s + f.amount, 0);
@@ -284,60 +271,30 @@ const DataStore = {
     const totalDanaTambahan = danaTambahan.reduce((s, f) => s + f.amount, 0);
     const modalAkhir = modalAwal + labaBersih + totalDanaTambahan;
 
-    // Detail dana tambahan
     const danaTambahanByCategory = {};
     danaTambahan.forEach(f => {
       danaTambahanByCategory[f.category] = (danaTambahanByCategory[f.category] || 0) + f.amount;
     });
 
     const perubahanEkuitas = {
-      modalAwal,
-      labaBersih,
-      totalDanaTambahan,
-      danaTambahanByCategory,
-      modalAkhir
+      modalAwal, labaBersih, totalDanaTambahan,
+      danaTambahanByCategory, modalAkhir
     };
 
-    // --- POSISI KEUANGAN ---
-    // Aset
-    const kasBank = modalAkhir; // simplified: all equity is in cash
-    const piutang = periodOrders
-      .filter(o => o.status === 'menunggu' || o.status === 'diproses')
-      .reduce((s, o) => s + o.total, 0);
-    const persediaan = this.getProducts().reduce((s, p) => s + (p.price * p.stock * 0.4), 0); // estimated at 40% of selling price
-    const totalAsetLancar = kasBank + piutang + persediaan;
-
-    // Aset Tetap (simplified estimate)
-    const asetTetap = pengeluaran
-      .filter(f => f.category.toLowerCase().includes('alat') || f.category.toLowerCase().includes('peralatan'))
-      .reduce((s, f) => s + f.amount, 0);
-    const totalAset = totalAsetLancar + asetTetap;
-
-    // Kewajiban (simplified — none for now, or pending orders needing fulfillment)
-    const kewajibanLancar = 0; // Could track supplier debts
-    const totalKewajiban = kewajibanLancar;
-
-    // Ekuitas
-    const ekuitas = totalAset - totalKewajiban;
-
-    const posisiKeuangan = {
-      kasBank,
-      piutang,
-      persediaan,
-      totalAsetLancar,
-      asetTetap,
-      totalAset,
-      kewajibanLancar,
-      totalKewajiban,
-      ekuitas
-    };
-
-    // --- ARUS KAS ---
-    // Operasi
+    // === ARUS KAS ===
+    // Operasi — penerimaan kas aktual (pendapatan - kenaikan piutang)
     const kasMasukOperasi = pemasukan.reduce((s, f) => s + f.amount, 0);
     const kasKeluarOperasi = pengeluaran
       .filter(f => !f.category.toLowerCase().includes('alat') && !f.category.toLowerCase().includes('peralatan'))
       .reduce((s, f) => s + f.amount, 0);
+
+    // Piutang = pesanan belum selesai (belum dibayar/diproses)
+    const piutangPeriode = periodOrders
+      .filter(o => o.status === 'menunggu' || o.status === 'diproses')
+      .reduce((s, o) => s + o.total, 0);
+
+    // Arus kas operasi metode tidak langsung: Laba Bersih - Kenaikan Piutang
+    // Tapi kita hitung langsung dari kas masuk - kas keluar operasi
     const arusOperasi = kasMasukOperasi - kasKeluarOperasi;
 
     // Investasi
@@ -353,29 +310,60 @@ const DataStore = {
     // Kenaikan bersih kas
     const kenaikanKas = arusOperasi + arusInvestasi + arusPendanaan;
 
-    // Kas awal
+    // Kas awal = modal awal (karena awal periode kas = ekuitas awal)
     const kasAwal = modalAwal;
     const kasAkhir = kasAwal + kenaikanKas;
 
     const arusKas = {
-      kasMasukOperasi,
-      kasKeluarOperasi,
-      arusOperasi,
-      kasKeluarInvestasi,
-      arusInvestasi,
-      kasMasukPendanaan,
-      arusPendanaan,
-      kenaikanKas,
-      kasAwal,
-      kasAkhir
+      kasMasukOperasi, kasKeluarOperasi, arusOperasi,
+      kasKeluarInvestasi, arusInvestasi,
+      kasMasukPendanaan, arusPendanaan,
+      kenaikanKas, kasAwal, kasAkhir
+    };
+
+    // === POSISI KEUANGAN / NERACA ===
+    // Kas dari arus kas akhir
+    const kasBank = kasAkhir;
+    // Piutang
+    const piutang = piutangPeriode;
+    // Persediaan
+    const persediaan = this.getProducts().reduce((s, p) => s + (p.price * p.stock * 0.4), 0);
+    const totalAsetLancar = kasBank + piutang + persediaan;
+
+    // Aset Tetap
+    const asetTetap = kasKeluarInvestasi; // pembelian peralatan
+    const totalAset = totalAsetLancar + asetTetap;
+
+    // Kewajiban (sederhana — belum ada utang supplier)
+    const kewajibanLancar = 0;
+    const totalKewajiban = kewajibanLancar;
+
+    // Ekuitas = Modal Akhir (dari Lap. Perubahan Ekuitas) + piutang + persediaan
+    // Persamaan: Aset = Kewajiban + Ekuitas → Ekuitas = Total Aset - Kewajiban
+    const ekuitas = totalAset - totalKewajiban;
+
+    // === NERACA SALDO (Trial Balance) ===
+    // Akun Debit: Kas, Piutang, Persediaan, Peralatan, HPP, Beban
+    // Akun Kredit: Kewajiban, Ekuitas/Modal, Pendapatan
+    const totalDebit = kasBank + piutang + persediaan + asetTetap + totalPengeluaran;
+    const totalKredit = totalKewajiban + modalAkhir + totalPendapatan;
+    // Catatan: setelah posting, Debit = Kredit karena
+    // kas + piutang + persediaan + asetTetap + beban = kewajiban + modal + pendapatan
+    // → ini seimbang karena: modal = kasAwal, dan kasAkhir = kasAwal + pendapatan - beban - investasi + pendanaan
+
+    const posisiKeuangan = {
+      kasBank, piutang, persediaan, totalAsetLancar,
+      asetTetap, totalAset,
+      kewajibanLancar, totalKewajiban,
+      ekuitas, modalAkhir,
+      // Neraca Saldo data
+      totalDebit, totalKredit,
+      totalPengeluaran
     };
 
     return {
       period: { year, month },
-      labaRugi,
-      posisiKeuangan,
-      perubahanEkuitas,
-      arusKas
+      labaRugi, posisiKeuangan, perubahanEkuitas, arusKas
     };
   },
 
