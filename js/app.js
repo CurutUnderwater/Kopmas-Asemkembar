@@ -38,6 +38,32 @@ function showToast(message, type = 'info') {
   setTimeout(() => toast.remove(), 3000);
 }
 
+// --- Theme Management ---
+function initTheme() {
+  const savedTheme = localStorage.getItem('kopmas_theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+  updateThemeIcons();
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const target = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', target);
+  localStorage.setItem('kopmas_theme', target);
+  updateThemeIcons();
+}
+
+function updateThemeIcons() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const icon = isDark ? '☀️' : '🌙';
+  document.querySelectorAll('.theme-toggle-icon').forEach(el => el.textContent = icon);
+}
+
+
 // --- Navbar ---
 function renderNavbar() {
   const cartCount = DataStore.getCartCount();
@@ -58,9 +84,14 @@ function renderNavbar() {
             🛒 ${cartCount > 0 ? `<span class="cart-count">${cartCount}</span>` : ''}
           </a>
         </div>
-        <button class="nav-toggle" onclick="toggleMobileNav()" aria-label="Menu">
-          <span></span><span></span><span></span>
-        </button>
+        <div style="display:flex; align-items:center; gap:var(--space-sm);">
+          <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme">
+            <span class="theme-toggle-icon">🌙</span>
+          </button>
+          <button class="nav-toggle" onclick="toggleMobileNav()" aria-label="Menu">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
       </div>
     </nav>
   `;
@@ -171,7 +202,10 @@ function renderAdminLayout(pageTitle, contentHTML) {
             </div>
           </div>
           <div class="topbar-right">
-            <span class="text-light" style="font-size: var(--fs-sm);">👋 Halo, Admin</span>
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme" style="margin-right:var(--space-sm);">
+              <span class="theme-toggle-icon">🌙</span>
+            </button>
+            <span class="text-light hide-mobile" style="font-size: var(--fs-sm);">👋 Halo, Admin</span>
           </div>
         </header>
         <div class="admin-content" id="admin-page-content">
@@ -395,6 +429,7 @@ window.addEventListener('cart-updated', () => {
 // --- Init ---
 window.addEventListener('hashchange', router);
 window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   DataStore.seed();
 
   // Initialize Firebase sync (if configured)
