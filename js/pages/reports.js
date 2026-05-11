@@ -296,8 +296,17 @@ function downloadReportExcel() {
   const tabNames = { 'laba-rugi': 'Laba_Rugi', 'posisi': 'Neraca_Saldo', 'ekuitas': 'Perubahan_Ekuitas', 'arus-kas': 'Arus_Kas' };
 
   const lr = data.labaRugi, pk = data.posisiKeuangan, pe = data.perubahanEkuitas, ak = data.arusKas;
-  const rpFmt = (v) => v === 0 || !v ? '-' : 'Rp ' + Math.abs(v).toLocaleString('id-ID');
 
+  // Consistent Rp formatting — always show value, never empty
+  const rp = (v) => {
+    if (v === null || v === undefined) return 'Rp 0';
+    var n = typeof v === 'number' ? v : 0;
+    if (n < 0) return '(Rp ' + Math.abs(n).toLocaleString('id-ID') + ')';
+    return 'Rp ' + n.toLocaleString('id-ID');
+  };
+  const rpOrDash = (v) => (v === 0 || !v) ? '-' : rp(v);
+
+  // Style constants
   const H1 = 'background:#4a7c59;color:#fff;font-weight:bold;text-align:center;font-size:13pt;border:1px solid #2d5a3a;padding:6px;';
   const H2 = 'background:#5d9a6e;color:#fff;font-weight:bold;text-align:center;font-size:11pt;border:1px solid #2d5a3a;padding:5px;';
   const H3 = 'background:#7ab88a;color:#1a3d2a;font-weight:bold;text-align:center;font-size:10pt;border:1px solid #2d5a3a;padding:4px;';
@@ -309,45 +318,68 @@ function downloadReportExcel() {
   const AR = 'text-align:right;';
   const AC = 'text-align:center;';
 
+  // Helper: row builder
+  var r = (s, c1, c2, c3, c4) => '<tr><td style="' + s + '">' + (c1||'') + '</td><td style="' + s + '">' + (c2||'') + '</td><td style="' + s + '">' + (c3||'') + '</td><td style="' + s + '">' + (c4||'') + '</td></tr>';
+
   let tbl = '';
 
   if (tab === 'laba-rugi') {
+    // Beban items — show actual categories or default items with Rp 0
+    var defaultBeban = ['Beban Gaji Pegawai','Beban Penjualan Lain-lain','Beban Sewa','Biaya Administrasi Lain-lain','Beban Perlengkapan','Beban Penyusutan Peralatan'];
+    var bebanRows = '';
+    var usedCats = {};
+    // Show actual beban categories first
+    Object.entries(lr.bebanByCategory).forEach(function(e) {
+      usedCats[e[0]] = true;
+      bebanRows += '<tr><td style="' + RW + '"></td><td style="' + RW + '">' + e[0] + '</td><td style="' + RW + '"></td><td style="' + RW + AR + '">' + rp(e[1]) + '</td></tr>';
+    });
+    // Then show default beban items not yet used, with Rp 0
+    defaultBeban.forEach(function(name) {
+      if (!usedCats[name]) {
+        bebanRows += '<tr><td style="' + RW + '"></td><td style="' + RW + '">' + name + '</td><td style="' + RW + '"></td><td style="' + RW + AR + '">Rp 0</td></tr>';
+      }
+    });
+
     tbl = `
       <tr><td style="${H1}" colspan="4">KOPMAS ASEM KEMBAR</td></tr>
       <tr><td style="${H2}" colspan="4">LAPORAN LABA/RUGI</td></tr>
       <tr><td style="${H3}" colspan="4">PERIODE ${periodLabel.toUpperCase()}</td></tr>
       <tr><td style="${RW}" colspan="4"></td></tr>
       <tr><td style="${ST}" colspan="2">Pendapatan</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}"></td><td style="${RW}">Penjualan</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}"></td><td style="${RW}">Retur dan Potongan Penjualan</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}"></td><td style="${RW}">Diskon Penjualan</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}"></td><td style="${RW}"></td><td style="${SB}${AC}">Rp</td><td style="${SB}${AR}">${rpFmt(lr.totalPendapatan)}</td></tr>
-      <tr><td style="${SB}"></td><td style="${SB}">Penjualan bersih</td><td style="${SB}${AC}">Rp</td><td style="${SB}${AR}">${rpFmt(lr.totalPendapatan)}</td></tr>
+      <tr><td style="${RW}"></td><td style="${RW}">Penjualan</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(lr.pendapatanPenjualan)}</td></tr>
+      <tr><td style="${RW}"></td><td style="${RW}">Pendapatan Lain-lain</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(lr.pendapatanLain)}</td></tr>
+      <tr><td style="${RW}"></td><td style="${RW}">Retur dan Potongan Penjualan</td><td style="${RW}"></td><td style="${RW}${AR}">Rp 0</td></tr>
+      <tr><td style="${RW}"></td><td style="${RW}">Diskon Penjualan</td><td style="${RW}"></td><td style="${RW}${AR}">Rp 0</td></tr>
+      <tr><td style="${SB}"></td><td style="${SB}">Penjualan Bersih</td><td style="${SB}"></td><td style="${SB}${AR}">${rp(lr.totalPendapatan)}</td></tr>
       <tr><td style="${RW}" colspan="4"></td></tr>
-      <tr><td style="${RW}"></td><td style="${RW}">Harga Pokok Penjualan</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${SB}"></td><td style="${SB}">Laba kotor</td><td style="${SB}${AC}">Rp</td><td style="${SB}${AR}">${rpFmt(lr.labaKotor)}</td></tr>
+      <tr><td style="${RW}"></td><td style="${RW}">Harga Pokok Penjualan (HPP)</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(lr.hpp)}</td></tr>
+      <tr><td style="${SB}"></td><td style="${SB}">Laba Kotor</td><td style="${SB}"></td><td style="${SB}${AR}">${rp(lr.labaKotor)}</td></tr>
+      <tr><td style="${RW}" colspan="4"></td></tr>
       <tr><td style="${ST}" colspan="2">BEBAN-BEBAN</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}"></td><td style="${RW}">Beban Gaji Pegawai</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}"></td><td style="${RW}">Beban Penjualan Lain-lain</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}"></td><td style="${RW}">Beban Sewa</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}"></td><td style="${RW}">Biaya Administrasi Lain-lain</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}"></td><td style="${RW}">Beban Perlengkapan</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}"></td><td style="${RW}">Beban Penyusutan Peralatan</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${SB}"></td><td style="${SB}">Total Beban</td><td style="${SB}${AC}">Rp</td><td style="${SB}${AR}">${rpFmt(lr.bebanOperasional + lr.hpp)}</td></tr>
-      <tr><td style="${GT}"></td><td style="${GT}">LABA BERSIH</td><td style="${GT}${AC}">Rp</td><td style="${GT}${AR}">${rpFmt(lr.labaBersih)}</td></tr>`;
+      ${bebanRows}
+      <tr><td style="${SB}"></td><td style="${SB}">Total Beban</td><td style="${SB}"></td><td style="${SB}${AR}">${rp(lr.totalPengeluaran)}</td></tr>
+      <tr><td style="${GT}"></td><td style="${GT}">LABA BERSIH</td><td style="${GT}"></td><td style="${GT}${AR}">${rp(lr.labaBersih)}</td></tr>`;
 
   } else if (tab === 'posisi') {
-    const akun = [
-      ['Kas', rpFmt(pk.kasBank), ''], ['Piutang', rpFmt(pk.piutang), ''],
-      ['Perlengkapan', '', ''], ['Peralatan', rpFmt(pk.asetTetap), ''],
-      ['Hutang', '', rpFmt(pk.kewajibanLancar)], ['Pendapatan Diterima Dimuka', '', ''],
-      ['Ekuitas', '', rpFmt(pk.ekuitas)], ['Pendapatan', '', rpFmt(lr.totalPendapatan)],
-      ['Beban Gaji', '', ''], ['Beban Asuransi', '', ''],
-      ['Beban Asuransi Properti Dan Kecelakaan', '', ''], ['Beban Sewa', '', ''],
+    // Neraca Saldo — Debit & Kredit harus seimbang
+    // Akun Debit: Kas, Piutang, Persediaan, Peralatan, HPP, Beban Operasional
+    // Akun Kredit: Hutang, Modal (Ekuitas Akhir), Pendapatan
+    var no = 0;
+    var akun = [
+      [++no, 'Kas',                          rp(pk.kasBank),         ''],
+      [++no, 'Piutang Usaha',                rp(pk.piutang),         ''],
+      [++no, 'Persediaan',                   rpOrDash(pk.persediaan),''],
+      [++no, 'Peralatan',                    rpOrDash(pk.asetTetap), ''],
+      [++no, 'HPP (Harga Pokok Penjualan)',  rpOrDash(lr.hpp),       ''],
+      [++no, 'Beban Operasional',            rpOrDash(lr.bebanOperasional), ''],
+      [++no, 'Hutang',                       '',                     rp(pk.kewajibanLancar)],
+      [++no, 'Modal / Ekuitas',              '',                     rp(pk.modalAkhir)],
+      [++no, 'Pendapatan',                   '',                     rp(lr.totalPendapatan)],
     ];
-    let aRows = akun.map(a =>
-      `<tr><td style="${RW}"></td><td style="${RW}" colspan="2">${a[0]}</td><td style="${RW}${AR}">${a[1]}</td><td style="${RW}${AR}">${a[2]}</td></tr>`
-    ).join('');
+    var aRows = akun.map(function(a) {
+      return '<tr><td style="' + RW + AC + '">' + a[0] + '</td><td style="' + RW + '" colspan="2">' + a[1] + '</td><td style="' + RW + AR + '">' + a[2] + '</td><td style="' + RW + AR + '">' + a[3] + '</td></tr>';
+    }).join('');
+
     tbl = `
       <tr><td style="${H1}" colspan="5">KOPMAS ASEM KEMBAR</td></tr>
       <tr><td style="${H2}" colspan="5">NERACA SALDO</td></tr>
@@ -355,7 +387,7 @@ function downloadReportExcel() {
       <tr><td style="${RW}" colspan="5"></td></tr>
       <tr><td style="${CH}">No.</td><td style="${CH}" colspan="2">Nama Akun</td><td style="${CH}">Debit</td><td style="${CH}">Kredit</td></tr>
       ${aRows}
-      <tr><td style="${GT}"></td><td style="${GT}" colspan="2">JUMLAH</td><td style="${GT}${AC}">Rp    -</td><td style="${GT}${AC}">Rp    -</td></tr>`;
+      <tr><td style="${GT}"></td><td style="${GT}" colspan="2">JUMLAH</td><td style="${GT}${AR}">${rp(pk.totalDebit)}</td><td style="${GT}${AR}">${rp(pk.totalKredit)}</td></tr>`;
 
   } else if (tab === 'ekuitas') {
     tbl = `
@@ -363,63 +395,60 @@ function downloadReportExcel() {
       <tr><td style="${H2}" colspan="4">LAPORAN PERUBAHAN EKUITAS</td></tr>
       <tr><td style="${H3}" colspan="4">PERIODE ${periodLabel.toUpperCase()}</td></tr>
       <tr><td style="${RW}" colspan="4"></td></tr>
-      <tr><td style="${ST}" colspan="2">Ekuitas Awal</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Laba bersih</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${SB}"></td><td style="${SB}"></td><td style="${SB}${AC}">Rp</td><td style="${SB}${AR}">${rpFmt(pe.labaBersih)}</td></tr>
+      <tr><td style="${ST}" colspan="2">Ekuitas Awal</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(pe.modalAwal)}</td></tr>
       <tr><td style="${RW}" colspan="4"></td></tr>
-      <tr><td style="${RW}" colspan="2">Prive</td><td style="${RW}"></td><td style="${RW}"></td></tr>
+      <tr><td style="${RW}" colspan="2">Laba Bersih Periode Ini</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(pe.labaBersih)}</td></tr>
+      <tr><td style="${RW}" colspan="2">Dana Tambahan (Hibah/Donasi)</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(pe.totalDanaTambahan)}</td></tr>
+      <tr><td style="${SB}" colspan="2">Total Penambahan</td><td style="${SB}"></td><td style="${SB}${AR}">${rp(pe.labaBersih + pe.totalDanaTambahan)}</td></tr>
       <tr><td style="${RW}" colspan="4"></td></tr>
-      <tr><td style="${GT}" colspan="2">Ekuitas Akhir</td><td style="${GT}${AC}">Rp</td><td style="${GT}${AR}">${rpFmt(pe.modalAkhir)}</td></tr>`;
+      <tr><td style="${RW}" colspan="2">Prive (Pengambilan Pribadi)</td><td style="${RW}"></td><td style="${RW}${AR}">Rp 0</td></tr>
+      <tr><td style="${RW}" colspan="4"></td></tr>
+      <tr><td style="${GT}" colspan="2">EKUITAS AKHIR</td><td style="${GT}"></td><td style="${GT}${AR}">${rp(pe.modalAkhir)}</td></tr>`;
 
   } else {
+    // Arus Kas — semua baris terisi dengan data aktual
     tbl = `
       <tr><td style="${H1}" colspan="4">KOPMAS ASEM KEMBAR</td></tr>
       <tr><td style="${H2}" colspan="4">LAPORAN ARUS KAS</td></tr>
       <tr><td style="${H3}" colspan="4">PERIODE ${periodLabel.toUpperCase()}</td></tr>
       <tr><td style="${RW}" colspan="4"></td></tr>
       <tr><td style="${ST}" colspan="2">ARUS KAS DARI AKTIVITAS OPERASI</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Kas diterima dari pelanggan</td><td style="${RW}"></td><td style="${RW}"></td></tr>
+      <tr><td style="${RW}" colspan="2">Kas diterima dari pelanggan</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(ak.kasMasukOperasi)}</td></tr>
       <tr><td style="${RW}" colspan="2">Dikurangi:</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Pembayaran kas untuk supplier (Barang)</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Pembayaran Kas untuk beban operasi</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Pembayaran kas untuk Pajak Penghasilan</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${SB}" colspan="2">Jumlah arus kas dari aktivitas operasi</td><td style="${SB}${AC}">Rp</td><td style="${SB}${AR}">${rpFmt(ak.arusOperasi)}</td></tr>
-      <tr><td style="${RW}" colspan="4"></td></tr>
+      <tr><td style="${RW}" colspan="2">&nbsp;&nbsp;Pembayaran kas untuk supplier (HPP)</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(lr.hpp)}</td></tr>
+      <tr><td style="${RW}" colspan="2">&nbsp;&nbsp;Pembayaran kas untuk beban operasi</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(lr.bebanOperasional)}</td></tr>
+      <tr><td style="${RW}" colspan="2">&nbsp;&nbsp;Pembayaran kas untuk Pajak Penghasilan</td><td style="${RW}"></td><td style="${RW}${AR}">Rp 0</td></tr>
+      <tr><td style="${SB}" colspan="2">Jumlah Arus Kas dari Aktivitas Operasi</td><td style="${SB}"></td><td style="${SB}${AR}">${rp(ak.arusOperasi)}</td></tr>
       <tr><td style="${RW}" colspan="4"></td></tr>
       <tr><td style="${ST}" colspan="2">ARUS KAS DARI AKTIVITAS INVESTASI</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Kas dari penjualan aktiva tetap</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Dikurangi :</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Kas dibayar untuk pembelian aktiva tetap</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${SB}" colspan="2">Jumlah arus kas untuk aktivitas investasi</td><td style="${SB}${AC}">Rp</td><td style="${SB}${AR}">${rpFmt(ak.arusInvestasi)}</td></tr>
-      <tr><td style="${RW}" colspan="4"></td></tr>
+      <tr><td style="${RW}" colspan="2">Kas dari penjualan aktiva tetap</td><td style="${RW}"></td><td style="${RW}${AR}">Rp 0</td></tr>
+      <tr><td style="${RW}" colspan="2">Dikurangi:</td><td style="${RW}"></td><td style="${RW}"></td></tr>
+      <tr><td style="${RW}" colspan="2">&nbsp;&nbsp;Kas dibayar untuk pembelian aktiva tetap</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(ak.kasKeluarInvestasi)}</td></tr>
+      <tr><td style="${SB}" colspan="2">Jumlah Arus Kas dari Aktivitas Investasi</td><td style="${SB}"></td><td style="${SB}${AR}">${rp(ak.arusInvestasi)}</td></tr>
       <tr><td style="${RW}" colspan="4"></td></tr>
       <tr><td style="${ST}" colspan="2">ARUS KAS DARI AKTIVITAS PENDANAAN</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Kas diterima dari penjualan saham</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Kas diterima dari penjualan investasi</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Dikurangi:</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Kas dibayar untuk dividen</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Kas dibayar untuk bunga</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Kas dibayar untuk pelunasan hutang jangka panjang</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${SB}" colspan="2">Jumlah arus kas dari aktivitas pendanaan</td><td style="${SB}${AC}">Rp</td><td style="${SB}${AR}">${rpFmt(ak.arusPendanaan)}</td></tr>
+      <tr><td style="${RW}" colspan="2">Kas diterima dari hibah/donasi</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(ak.kasMasukPendanaan)}</td></tr>
+      <tr><td style="${RW}" colspan="2">Kas dibayar untuk dividen/prive</td><td style="${RW}"></td><td style="${RW}${AR}">Rp 0</td></tr>
+      <tr><td style="${SB}" colspan="2">Jumlah Arus Kas dari Aktivitas Pendanaan</td><td style="${SB}"></td><td style="${SB}${AR}">${rp(ak.arusPendanaan)}</td></tr>
       <tr><td style="${RW}" colspan="4"></td></tr>
-      <tr><td style="${GT}" colspan="2">Kenaikan (Penurunan) kas</td><td style="${GT}"></td><td style="${GT}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Kas pada awal periode</td><td style="${RW}"></td><td style="${RW}"></td></tr>
-      <tr><td style="${RW}" colspan="2">Kas pada akhir periode</td><td style="${RW}"></td><td style="${RW}"></td></tr>`;
+      <tr><td style="${GT}" colspan="2">Kenaikan (Penurunan) Bersih Kas</td><td style="${GT}"></td><td style="${GT}${AR}">${rp(ak.kenaikanKas)}</td></tr>
+      <tr><td style="${RW}" colspan="2">Kas pada Awal Periode</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(ak.kasAwal)}</td></tr>
+      <tr><td style="${GT}" colspan="2">KAS PADA AKHIR PERIODE</td><td style="${GT}"></td><td style="${GT}${AR}">${rp(ak.kasAkhir)}</td></tr>`;
   }
 
-  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="UTF-8">
-<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
-<x:Name>${tabNames[tab]}</x:Name>
-<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
-</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
-</head><body>
-<table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-family:Calibri,Arial,sans-serif;">
-${tbl}
-</table></body></html>`;
+  var fullHtml = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">' +
+    '<head><meta charset="UTF-8">' +
+    '<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>' +
+    '<x:Name>' + tabNames[tab] + '</x:Name>' +
+    '<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>' +
+    '</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->' +
+    '</head><body>' +
+    '<table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-family:Calibri,Arial,sans-serif;">' +
+    tbl +
+    '</table></body></html>';
 
-  // Synchronous Blob download — must be in same call stack as user click
-  var blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  // Synchronous Blob download
+  var blob = new Blob(['\ufeff' + fullHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
   var link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = 'Laporan_' + tabNames[tab] + '_KOPMAS_Asem_Kembar.xls';
