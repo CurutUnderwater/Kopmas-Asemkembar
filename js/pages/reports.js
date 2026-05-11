@@ -293,7 +293,7 @@ function downloadReportExcel() {
   const data = DataStore.generateReportData(period);
   const periodLabel = getReportPeriodLabel(data.period);
   const tab = window._reportTab || 'laba-rugi';
-  const tabNames = { 'laba-rugi': 'Laba_Rugi', 'posisi': 'Neraca_Saldo', 'ekuitas': 'Perubahan_Ekuitas', 'arus-kas': 'Arus_Kas' };
+  const tabNames = { 'laba-rugi': 'Laba_Rugi', 'posisi': 'Posisi_Keuangan', 'ekuitas': 'Perubahan_Ekuitas', 'arus-kas': 'Arus_Kas' };
 
   const lr = data.labaRugi, pk = data.posisiKeuangan, pe = data.perubahanEkuitas, ak = data.arusKas;
 
@@ -361,33 +361,33 @@ function downloadReportExcel() {
       <tr><td style="${GT}"></td><td style="${GT}">LABA BERSIH</td><td style="${GT}"></td><td style="${GT}${AR}">${rp(lr.labaBersih)}</td></tr>`;
 
   } else if (tab === 'posisi') {
-    // Neraca Saldo — Debit & Kredit harus seimbang
-    // Akun Debit: Kas, Piutang, Persediaan, Peralatan, HPP, Beban Operasional
-    // Akun Kredit: Hutang, Modal (Ekuitas Akhir), Pendapatan
-    var no = 0;
-    var akun = [
-      [++no, 'Kas',                          rp(pk.kasBank),         ''],
-      [++no, 'Piutang Usaha',                rp(pk.piutang),         ''],
-      [++no, 'Persediaan',                   rpOrDash(pk.persediaan),''],
-      [++no, 'Peralatan',                    rpOrDash(pk.asetTetap), ''],
-      [++no, 'HPP (Harga Pokok Penjualan)',  rpOrDash(lr.hpp),       ''],
-      [++no, 'Beban Operasional',            rpOrDash(lr.bebanOperasional), ''],
-      [++no, 'Hutang',                       '',                     rp(pk.kewajibanLancar)],
-      [++no, 'Modal / Ekuitas',              '',                     rp(pk.modalAkhir)],
-      [++no, 'Pendapatan',                   '',                     rp(lr.totalPendapatan)],
-    ];
-    var aRows = akun.map(function(a) {
-      return '<tr><td style="' + RW + AC + '">' + a[0] + '</td><td style="' + RW + '" colspan="2">' + a[1] + '</td><td style="' + RW + AR + '">' + a[2] + '</td><td style="' + RW + AR + '">' + a[3] + '</td></tr>';
-    }).join('');
-
+    // Laporan Posisi Keuangan (Balance Sheet)
     tbl = `
-      <tr><td style="${H1}" colspan="5">KOPMAS ASEM KEMBAR</td></tr>
-      <tr><td style="${H2}" colspan="5">NERACA SALDO</td></tr>
-      <tr><td style="${H3}" colspan="5">PERIODE ${periodLabel.toUpperCase()}</td></tr>
-      <tr><td style="${RW}" colspan="5"></td></tr>
-      <tr><td style="${CH}">No.</td><td style="${CH}" colspan="2">Nama Akun</td><td style="${CH}">Debit</td><td style="${CH}">Kredit</td></tr>
-      ${aRows}
-      <tr><td style="${GT}"></td><td style="${GT}" colspan="2">JUMLAH</td><td style="${GT}${AR}">${rp(pk.totalDebit)}</td><td style="${GT}${AR}">${rp(pk.totalKredit)}</td></tr>`;
+      <tr><td style="${H1}" colspan="4">KOPMAS ASEM KEMBAR</td></tr>
+      <tr><td style="${H2}" colspan="4">LAPORAN POSISI KEUANGAN</td></tr>
+      <tr><td style="${H3}" colspan="4">Per ${periodLabel.toUpperCase()}</td></tr>
+      <tr><td style="${RW}" colspan="4"></td></tr>
+      <tr><td style="${ST}" colspan="4">ASET</td></tr>
+      <tr><td style="${ST}" colspan="2">&nbsp;&nbsp;Aset Lancar</td><td style="${RW}"></td><td style="${RW}"></td></tr>
+      <tr><td style="${RW}" colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Kas & Setara Kas</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(pk.kasBank)}</td></tr>
+      <tr><td style="${RW}" colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Piutang Usaha</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(pk.piutang)}</td></tr>
+      <tr><td style="${RW}" colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Persediaan</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(pk.persediaan)}</td></tr>
+      <tr><td style="${SB}" colspan="2">&nbsp;&nbsp;Total Aset Lancar</td><td style="${SB}"></td><td style="${SB}${AR}">${rp(pk.totalAsetLancar)}</td></tr>
+      <tr><td style="${RW}" colspan="4"></td></tr>
+      <tr><td style="${ST}" colspan="2">&nbsp;&nbsp;Aset Tetap</td><td style="${RW}"></td><td style="${RW}"></td></tr>
+      <tr><td style="${RW}" colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Peralatan & Perlengkapan</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(pk.asetTetap)}</td></tr>
+      <tr><td style="${SB}" colspan="2">&nbsp;&nbsp;Total Aset Tetap</td><td style="${SB}"></td><td style="${SB}${AR}">${rp(pk.asetTetap)}</td></tr>
+      <tr><td style="${RW}" colspan="4"></td></tr>
+      <tr><td style="${GT}" colspan="2">TOTAL ASET</td><td style="${GT}"></td><td style="${GT}${AR}">${rp(pk.totalAset)}</td></tr>
+      <tr><td style="${RW}" colspan="4"></td></tr>
+      <tr><td style="${ST}" colspan="4">KEWAJIBAN</td></tr>
+      <tr><td style="${RW}" colspan="2">&nbsp;&nbsp;Kewajiban Lancar</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(pk.kewajibanLancar)}</td></tr>
+      <tr><td style="${SB}" colspan="2">Total Kewajiban</td><td style="${SB}"></td><td style="${SB}${AR}">${rp(pk.totalKewajiban)}</td></tr>
+      <tr><td style="${RW}" colspan="4"></td></tr>
+      <tr><td style="${ST}" colspan="4">EKUITAS</td></tr>
+      <tr><td style="${RW}" colspan="2">&nbsp;&nbsp;Modal / Ekuitas</td><td style="${RW}"></td><td style="${RW}${AR}">${rp(pk.ekuitas)}</td></tr>
+      <tr><td style="${RW}" colspan="4"></td></tr>
+      <tr><td style="${GT}" colspan="2">TOTAL KEWAJIBAN & EKUITAS</td><td style="${GT}"></td><td style="${GT}${AR}">${rp(pk.totalKewajiban + pk.ekuitas)}</td></tr>`;
 
   } else if (tab === 'ekuitas') {
     tbl = `
