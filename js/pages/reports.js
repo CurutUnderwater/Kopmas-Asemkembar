@@ -287,7 +287,7 @@ function downloadReportPDF() {
   });
 }
 
-/* --- Excel Download --- */
+/* --- Excel Download (Formatted) --- */
 function downloadReportExcel() {
   if (typeof XLSX === 'undefined') {
     showToast('Library Excel belum dimuat. Coba refresh halaman.', 'error');
@@ -298,72 +298,154 @@ function downloadReportExcel() {
   const data = DataStore.generateReportData(period);
   const periodLabel = getReportPeriodLabel(data.period);
   const tab = window._reportTab || 'laba-rugi';
-  const tabNames = { 'laba-rugi': 'Laba_Rugi', 'posisi': 'Posisi_Keuangan', 'ekuitas': 'Perubahan_Ekuitas', 'arus-kas': 'Arus_Kas' };
+  const tabNames = { 'laba-rugi': 'Laba_Rugi', 'posisi': 'Neraca_Saldo', 'ekuitas': 'Perubahan_Ekuitas', 'arus-kas': 'Arus_Kas' };
 
   const wb = XLSX.utils.book_new();
+  let ws, rows;
 
-  // Build sheet based on active tab
-  let rows = [];
   const lr = data.labaRugi, pk = data.posisiKeuangan, pe = data.perubahanEkuitas, ak = data.arusKas;
+
+  const rpFmt = (v) => v === 0 ? '-' : v;
 
   if (tab === 'laba-rugi') {
     rows = [
-      ['KOPMAS ASEM KEMBAR'], ['LAPORAN LABA RUGI'], [`Periode: ${periodLabel}`], [],
-      ['PENDAPATAN', ''],
-      ...Object.entries(lr.pendapatanByCategory).map(([c, v]) => ['  ' + c, v]),
-      ['Total Pendapatan', lr.totalPendapatan], [],
-      ['HARGA POKOK PENJUALAN', ''],
-      ...Object.entries(lr.bebanByCategory).filter(([c]) => ['Benih','Pupuk'].some(x => c.includes(x))).map(([c, v]) => ['  ' + c, v]),
-      ['Total HPP', lr.hpp], [],
-      ['LABA KOTOR', lr.labaKotor], [],
-      ['BEBAN OPERASIONAL', ''],
-      ...Object.entries(lr.bebanByCategory).filter(([c]) => !['Benih','Pupuk'].some(x => c.includes(x))).map(([c, v]) => ['  ' + c, v]),
-      ['Total Beban Operasional', lr.bebanOperasional], [],
-      ['LABA (RUGI) BERSIH', lr.labaBersih]
+      ['', 'KOPMAS ASEM KEMBAR', '', ''],
+      ['', 'LAPORAN LABA/RUGI', '', ''],
+      ['', 'PERIODE ' + periodLabel.toUpperCase(), '', ''],
+      ['', '', '', ''],
+      ['', 'Pendapatan', '', ''],
+      ['', 'Penjualan', '', ''],
+      ['', 'Retur dan Potongan Penjualan', '', ''],
+      ['', 'Diskon Penjualan', '', ''],
+      ['', '', 'Rp', rpFmt(lr.totalPendapatan)],
+      ['', 'Penjualan bersih', 'Rp', rpFmt(lr.totalPendapatan)],
+      ['', '', '', ''],
+      ['', 'Harga Pokok Penjualan', '', ''],
+      ['', 'Laba kotor', 'Rp', rpFmt(lr.labaKotor)],
+      ['', 'BEBAN-BEBAN', '', ''],
+      ['', 'Beban Gaji Pegawai', '', ''],
+      ['', 'Beban Penjualan Lain-lain', '', ''],
+      ['', 'Beban Sewa', '', ''],
+      ['', 'Biaya Administrasi Lain-lain', '', ''],
+      ['', 'Beban Perlengkapan', '', ''],
+      ['', 'Beban Penyusutan Peralatan', '', ''],
     ];
+    // Add actual expense categories
+    Object.entries(lr.bebanByCategory).forEach(([cat, val]) => {
+      rows.push(['', cat, '', rpFmt(val)]);
+    });
+    rows.push(['', 'Total Beban', 'Rp', rpFmt(lr.bebanOperasional + lr.hpp)]);
+    rows.push(['', 'LABA BERSIH', 'Rp', rpFmt(lr.labaBersih)]);
+
+    ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 3 }, { wch: 38 }, { wch: 5 }, { wch: 15 }];
+    // Merge header cells
+    ws['!merges'] = [
+      { s: { r: 0, c: 1 }, e: { r: 0, c: 3 } },
+      { s: { r: 1, c: 1 }, e: { r: 1, c: 3 } },
+      { s: { r: 2, c: 1 }, e: { r: 2, c: 3 } },
+    ];
+
   } else if (tab === 'posisi') {
     rows = [
-      ['KOPMAS ASEM KEMBAR'], ['LAPORAN POSISI KEUANGAN'], [`Per ${periodLabel}`], [],
-      ['ASET', ''],
-      ['Aset Lancar', ''],
-      ['  Kas & Setara Kas', pk.kasBank], ['  Piutang Usaha', pk.piutang], ['  Persediaan', pk.persediaan],
-      ['Total Aset Lancar', pk.totalAsetLancar], [],
-      ['Aset Tetap', ''], ['  Peralatan', pk.asetTetap], ['Total Aset Tetap', pk.asetTetap], [],
-      ['TOTAL ASET', pk.totalAset], [],
-      ['KEWAJIBAN', ''], ['  Kewajiban Lancar', pk.kewajibanLancar], ['Total Kewajiban', pk.totalKewajiban], [],
-      ['EKUITAS', ''], ['  Modal / Ekuitas', pk.ekuitas], [],
-      ['TOTAL KEWAJIBAN & EKUITAS', pk.totalKewajiban + pk.ekuitas]
+      ['', 'KOPMAS ASEM KEMBAR', '', '', ''],
+      ['', 'NERACA SALDO', '', '', ''],
+      ['', 'PERIODE ' + periodLabel.toUpperCase(), '', '', ''],
+      ['', '', '', '', ''],
+      ['No.', 'Nama Akun', '', 'Debit', 'Kredit'],
+      ['', 'Kas', '', rpFmt(pk.kasBank), ''],
+      ['', 'Piutang', '', rpFmt(pk.piutang), ''],
+      ['', 'Perlengkapan', '', '', ''],
+      ['', 'Peralatan', '', rpFmt(pk.asetTetap), ''],
+      ['', 'Hutang', '', '', rpFmt(pk.kewajibanLancar)],
+      ['', 'Pendapatan Diterima Dimuka', '', '', ''],
+      ['', 'Ekuitas', '', '', rpFmt(pk.ekuitas)],
+      ['', 'Pendapatan', '', '', rpFmt(lr.totalPendapatan)],
+      ['', 'Beban Gaji', '', '', ''],
+      ['', 'Beban Asuransi', '', '', ''],
+      ['', 'Beban Asuransi Properti Dan Kecelakaan', '', '', ''],
+      ['', 'Beban Sewa', '', '', ''],
+      ['', 'JUMLAH', '', 'Rp    -', 'Rp    -'],
     ];
+
+    ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 5 }, { wch: 40 }, { wch: 3 }, { wch: 12 }, { wch: 12 }];
+    ws['!merges'] = [
+      { s: { r: 0, c: 1 }, e: { r: 0, c: 4 } },
+      { s: { r: 1, c: 1 }, e: { r: 1, c: 4 } },
+      { s: { r: 2, c: 1 }, e: { r: 2, c: 4 } },
+      { s: { r: 4, c: 1 }, e: { r: 4, c: 2 } },
+    ];
+
   } else if (tab === 'ekuitas') {
     rows = [
-      ['KOPMAS ASEM KEMBAR'], ['LAPORAN PERUBAHAN EKUITAS'], [`Periode: ${periodLabel}`], [],
-      ['Saldo Modal Awal', pe.modalAwal], [],
-      ['PENAMBAHAN', ''],
-      ['  Laba (Rugi) Bersih', pe.labaBersih],
-      ...Object.entries(pe.danaTambahanByCategory).map(([c, v]) => ['  ' + c, v]),
-      ['Total Dana Tambahan', pe.totalDanaTambahan], [],
-      ['MODAL AKHIR PERIODE', pe.modalAkhir]
+      ['', 'KOMPAS ASEM KEMBAR', '', ''],
+      ['', 'LAPORAN PERUBAHAN EKUITAS', '', ''],
+      ['', 'PERIODE ' + periodLabel.toUpperCase(), '', ''],
+      ['', '', '', ''],
+      ['Ekuitas Awal', '', '', ''],
+      ['Laba bersih', '', '', ''],
+      ['', '', 'Rp', rpFmt(pe.labaBersih)],
+      ['', '', '', ''],
+      ['Prive', '', '', ''],
+      ['', '', '', ''],
+      ['Ekuitas Akhir', '', 'Rp', rpFmt(pe.modalAkhir)],
     ];
+
+    ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 18 }, { wch: 12 }, { wch: 5 }, { wch: 15 }];
+    ws['!merges'] = [
+      { s: { r: 0, c: 1 }, e: { r: 0, c: 3 } },
+      { s: { r: 1, c: 1 }, e: { r: 1, c: 3 } },
+      { s: { r: 2, c: 1 }, e: { r: 2, c: 3 } },
+    ];
+
   } else {
+    // Arus Kas
     rows = [
-      ['KOPMAS ASEM KEMBAR'], ['LAPORAN ARUS KAS'], [`Periode: ${periodLabel}`], [],
-      ['ARUS KAS DARI AKTIVITAS OPERASI', ''],
-      ['  Penerimaan Penjualan', ak.kasMasukOperasi], ['  Pembayaran Beban', -ak.kasKeluarOperasi],
-      ['Arus Kas Bersih Operasi', ak.arusOperasi], [],
-      ['ARUS KAS DARI AKTIVITAS INVESTASI', ''],
-      ['  Pembelian Peralatan', -ak.kasKeluarInvestasi],
-      ['Arus Kas Bersih Investasi', ak.arusInvestasi], [],
-      ['ARUS KAS DARI AKTIVITAS PENDANAAN', ''],
-      ['  Penerimaan Hibah & Donasi', ak.kasMasukPendanaan],
-      ['Arus Kas Bersih Pendanaan', ak.arusPendanaan], [],
-      ['KENAIKAN (PENURUNAN) KAS', ak.kenaikanKas],
-      ['Kas Awal Periode', ak.kasAwal],
-      ['KAS AKHIR PERIODE', ak.kasAkhir]
+      ['', 'KOPMAS ASEM KEMBAR', '', ''],
+      ['', 'LAPORAN ARUS KAS', '', ''],
+      ['', 'PERIODE ' + periodLabel.toUpperCase(), '', ''],
+      ['', '', '', ''],
+      ['ARUS KAS DARI AKTIVITAS OPERASI', '', '', ''],
+      ['Kas diterima dari pelanggan', '', '', ''],
+      ['Dikurangi:', '', '', ''],
+      ['Pembayaran kas untuk supplier (Barang)', '', '', ''],
+      ['Pembayaran Kas untuk beban operasi', '', '', ''],
+      ['Pembayaran kas untuk Pajak Penghasilan', '', '', ''],
+      ['Jumlah arus kas dari aktivitas operasi', '', 'Rp', rpFmt(ak.arusOperasi)],
+      ['', '', '', ''],
+      ['', '', '', ''],
+      ['ARUS KAS DARI AKTIVITAS INVESTASI', '', '', ''],
+      ['Kas dari penjualan aktiva tetap', '', '', ''],
+      ['Dikurangi :', '', '', ''],
+      ['Kas dibayar untuk pembelian aktiva tetap', '', '', ''],
+      ['Jumlah arus kas untuk aktivitas investasi', '', 'Rp', rpFmt(ak.arusInvestasi)],
+      ['', '', '', ''],
+      ['', '', '', ''],
+      ['ARUS KAS DARI AKTIVITAS PENDANAAN', '', '', ''],
+      ['Kas diterima dari penjualan saham', '', '', ''],
+      ['Kas diterima dari penjualan investasi', '', '', ''],
+      ['Dikurangi:', '', '', ''],
+      ['Kas dibayar untuk dividen', '', '', ''],
+      ['Kas dibayar untuk bunga', '', '', ''],
+      ['Kas dibayar untuk pelunasan hutang jangka panjang', '', '', ''],
+      ['Jumlah arus kas dari aktivitas pendanaan', '', 'Rp', rpFmt(ak.arusPendanaan)],
+      ['', '', '', ''],
+      ['Kenaikan (Penurunan) kas', '', '', ''],
+      ['Kas pada awal periode', '', '', ''],
+      ['Kas pada akhir periode', '', '', ''],
+    ];
+
+    ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 48 }, { wch: 5 }, { wch: 5 }, { wch: 15 }];
+    ws['!merges'] = [
+      { s: { r: 0, c: 1 }, e: { r: 0, c: 3 } },
+      { s: { r: 1, c: 1 }, e: { r: 1, c: 3 } },
+      { s: { r: 2, c: 1 }, e: { r: 2, c: 3 } },
     ];
   }
 
-  const ws = XLSX.utils.aoa_to_sheet(rows.map(r => Array.isArray(r) ? (r.length === 1 ? [r[0]] : [r[0], r[1]]) : [r]));
-  ws['!cols'] = [{ wch: 40 }, { wch: 20 }];
   XLSX.utils.book_append_sheet(wb, ws, tabNames[tab]);
 
   const filename = `Laporan_${tabNames[tab]}_KOPMAS_Asem_Kembar.xlsx`;
