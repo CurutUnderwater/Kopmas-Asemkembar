@@ -1302,3 +1302,90 @@
     align-items: stretch;
   }
 }
+
+/* ====== Dark Mode — Public Pages ====== */
+[data-theme="dark"] .navbar.scrolled {
+  background: rgba(15,17,23,0.95);
+  border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="dark"] .navbar.scrolled .nav-brand {
+  color: var(--color-secondary);
+}
+
+[data-theme="dark"] .navbar.scrolled .nav-links a {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .navbar.scrolled .nav-links a:hover,
+[data-theme="dark"] .navbar.scrolled .nav-links a.active {
+  background: rgba(82,183,136,0.15);
+  color: var(--color-secondary);
+}
+
+[data-theme="dark"] .navbar.scrolled .nav-toggle span {
+  background: var(--color-text);
+}
+
+@media (max-width: 768px) {
+  [data-theme="dark"] .nav-links {
+    background: #1A1D27;
+  }
+}
+
+[data-theme="dark"] .footer {
+  background: linear-gradient(180deg, #0F1117, #0A0C12);
+}
+
+[data-theme="dark"] .page-header {
+  background: linear-gradient(135deg, #1B4332, #0F1117);
+}
+
+[data-theme="dark"] .report-sheet {
+  background: #1A1D27;
+  border-color: #2A2D3A;
+}
+
+[data-theme="dark"] .report-header-print h3 {
+  color: var(--color-secondary);
+}
+
+[data-theme="dark"] .report-table .report-section-title td {
+  background: rgba(82,183,136,0.1);
+  color: var(--color-secondary);
+}
+
+[data-theme="dark"] .report-table .report-subtotal td {
+  background: rgba(82,183,136,0.06);
+}
+
+[data-theme="dark"] .report-table .report-total td {
+  background: rgba(82,183,136,0.12);
+  color: var(--color-secondary);
+}
+
+[data-theme="dark"] .report-table .report-grand-total td {
+  background: linear-gradient(135deg, #1B4332, #2D6A4F);
+  color: #95D5B2;
+}
+
+/* ====== Responsive — Mobile Fixes ====== */
+@media (max-width: 480px) {
+  .hero { min-height: 90vh; }
+  .hero-content h1 { font-size: var(--fs-2xl); }
+  .hero-content p { font-size: var(--fs-sm); }
+  .hero-actions { flex-direction: column; gap: var(--space-sm); }
+  .hero-actions .btn { width: 100%; }
+
+  .footer-grid { gap: var(--space-lg); }
+  .footer-col { text-align: center; }
+  .footer-bottom { flex-direction: column; gap: var(--space-sm); text-align: center; }
+}
+
+/* ====== Responsive — Desktop Large ====== */
+@media (min-width: 1400px) {
+  .hero-content h1 { font-size: var(--fs-5xl); }
+  .hero-content p { font-size: var(--fs-lg); }
+
+  .footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; }
+}
