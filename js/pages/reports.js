@@ -436,24 +436,27 @@ function downloadReportExcel() {
       <tr><td style="${GT}" colspan="2">KAS PADA AKHIR PERIODE</td><td style="${GT}"></td><td style="${GT}${AR}">${rp(ak.kasAkhir)}</td></tr>`;
   }
 
-  var fullHtml = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">' +
-    '<head><meta charset="UTF-8">' +
-    '<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>' +
-    '<x:Name>' + tabNames[tab] + '</x:Name>' +
-    '<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>' +
-    '</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->' +
-    '</head><body>' +
-    '<table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-family:Calibri,Arial,sans-serif;">' +
-    tbl +
-    '</table></body></html>';
-
-  // Synchronous Blob download
-  var blob = new Blob(['\ufeff' + fullHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
-  var link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'Laporan_' + tabNames[tab] + '_KOPMAS_Asem_Kembar.xls';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  showToast('Excel berhasil diunduh!', 'success');
+  // Generate proper .xlsx file using TableToExcel (preserves inline styles)
+  try {
+    const tempDiv = document.createElement('div');
+    tempDiv.style.display = 'none'; // hide from view
+    // Add data-cols-width to make the columns look neat in Excel
+    tempDiv.innerHTML = '<table id="temp-excel-table" data-cols-width="5,35,15,20,20">' + tbl + '</table>';
+    document.body.appendChild(tempDiv);
+    
+    // Convert HTML table (with inline styles) to a true .xlsx file
+    TableToExcel.convert(document.getElementById('temp-excel-table'), {
+      name: 'Laporan_' + tabNames[tab] + '_KOPMAS_Asem_Kembar.xlsx',
+      sheet: {
+        name: tabNames[tab]
+      }
+    });
+    
+    // Cleanup
+    document.body.removeChild(tempDiv);
+    showToast('Excel berhasil diunduh!', 'success');
+  } catch (err) {
+    console.error('Excel Export Error:', err);
+    showToast('Gagal mengunduh Excel. Pastikan library termuat.', 'error');
+  }
 }
