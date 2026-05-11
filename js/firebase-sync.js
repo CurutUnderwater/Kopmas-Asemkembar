@@ -16,7 +16,8 @@ const FirebaseSync = {
     'kopmas_agenda',
     'kopmas_finance',
     'kopmas_admin',
-    'kopmas_settings'
+    'kopmas_settings',
+    'kopmas_members'
   ],
 
   /**
