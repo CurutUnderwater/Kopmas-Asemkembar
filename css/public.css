@@ -1372,7 +1372,6 @@
 /* ====== Responsive — Mobile Fixes ====== */
 @media (max-width: 480px) {
   .hero { min-height: 90vh; }
-  .hero-content h1 { font-size: var(--fs-2xl); }
   .hero-content p { font-size: var(--fs-sm); }
   .hero-actions { flex-direction: column; gap: var(--space-sm); }
   .hero-actions .btn { width: 100%; }
@@ -1384,7 +1383,6 @@
 
 /* ====== Responsive — Desktop Large ====== */
 @media (min-width: 1400px) {
-  .hero-content h1 { font-size: var(--fs-5xl); }
   .hero-content p { font-size: var(--fs-lg); }
 
   .footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; }
