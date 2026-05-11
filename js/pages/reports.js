@@ -418,16 +418,13 @@ function downloadReportExcel() {
 ${tbl}
 </table></body></html>`;
 
-  const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'Laporan_' + tabNames[tab] + '_KOPMAS_Asem_Kembar.xls';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  // Synchronous Blob download — must be in same call stack as user click
+  var blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  var link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'Laporan_' + tabNames[tab] + '_KOPMAS_Asem_Kembar.xls';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
   showToast('Excel berhasil diunduh!', 'success');
 }
-
-
