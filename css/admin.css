@@ -419,3 +419,55 @@
   opacity: 1;
   visibility: visible;
 }
+
+/* ====== Dark Mode — Admin ====== */
+[data-theme="dark"] .admin-sidebar {
+  background: #12141D;
+  border-right: 1px solid #2A2D3A;
+}
+
+[data-theme="dark"] .admin-topbar {
+  background: #1A1D27;
+  border-bottom: 1px solid #2A2D3A;
+}
+
+[data-theme="dark"] .chart-card,
+[data-theme="dark"] .recent-section,
+[data-theme="dark"] .finance-card {
+  background: #1A1D27;
+  border: 1px solid #2A2D3A;
+}
+
+[data-theme="dark"] .login-page {
+  background: linear-gradient(160deg, #0F1117, #1B4332, #0F1117);
+}
+
+[data-theme="dark"] .login-card {
+  background: #1A1D27;
+  border: 1px solid #2A2D3A;
+}
+
+[data-theme="dark"] .sidebar-overlay {
+  background: rgba(0,0,0,0.7);
+}
+
+/* ====== Responsive — Admin Mobile ====== */
+@media (max-width: 480px) {
+  .admin-content { padding: var(--space-sm); }
+  .admin-topbar { padding: var(--space-sm) var(--space-md); }
+  .topbar-left h2 { font-size: var(--fs-md); }
+
+  .finance-card .finance-amount { font-size: var(--fs-xl); }
+  .chart-container { height: 200px; }
+
+  .action-btns { flex-direction: column; }
+  .action-btns .btn { width: 100%; }
+}
+
+/* ====== Responsive — Admin Desktop Large ====== */
+@media (min-width: 1400px) {
+  .admin-sidebar { width: 280px; }
+  .admin-main { margin-left: 280px; }
+  .admin-content { padding: var(--space-2xl); }
+  .topbar-left h2 { font-size: var(--fs-2xl); }
+}
